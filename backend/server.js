@@ -1,6 +1,9 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
+import dns from 'dns'
+
+dns.setDefaultResultOrder("ipv4first");
 
 
 dotenv.config()

@@ -2,9 +2,8 @@ import asyncHandler from "../middlewares/asyncHandler.js"
 import User from '../models/User.js'
 import bcrypt from 'bcrypt'
 import generateToken from "../utils/JWT.js"
-import generateToken from "../utils/JWT.js"
 
-export const register = asynchandler(async (req, res, next) => {
+export const register = asyncHandler(async (req, res, next) => {
     const {name, email, password} = req.body 
     if(!name || !email || !password){
         const error = new Error('all fields are required')

@@ -19,16 +19,16 @@ const leaveSchema = new mongoose.Schema(
     reason: { type: String, required: true, trim: true, maxlength: 500 },
     status: {
       type: String,
-      enum: ["pending", "approve", "reject", "cancel"],
+      enum: ["pending", "approved", "rejected", "cancelled"],
       default: "pending",
     },
     approvedBy: {
       type: mongoose.Type.objectId,
       ref: "User",
-      approvedComment: { type: String, trim: true },
-      attachment: { type: String },
-      leaveBalanceSnapshot: { type: Number },
     },
+    approvedComment: { type: String, trim: true },
+    attachment: { type: String },
+    leaveBalanceSnapshot: { type: Number },
   },
   { timestamps: true },
 );

@@ -1,6 +1,7 @@
-import asyncHandler from "../middlewares/asyncHandler.js";
+import asyncHandler from "../middlewares/asyncHandler.js"
 import User from '../models/User.js'
 import bcrypt from 'bcrypt'
+import generateToken from "../utils/JWT.js"
 import generateToken from "../utils/JWT.js";
 
 

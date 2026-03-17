@@ -5,6 +5,8 @@ import generateToken from "../utils/JWT.js"
 import generateToken from "../utils/JWT.js";
 
 
+
+
 export const login = asyncHandler(async(req,res) => {
     const {email, password} = req.body
     if(!email || !password){

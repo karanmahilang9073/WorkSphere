@@ -5,7 +5,7 @@ import generateToken from "../utils/JWT.js"
 import generateToken from "../utils/JWT.js"
 
 export const register = asynchandler(async (req, res, next) => {
-    const {name, email, password, department, position, role} = req.body 
+    const {name, email, password} = req.body 
     if(!name || !email || !password){
         const error = new Error('all fields are required')
         error.statusCode = 400

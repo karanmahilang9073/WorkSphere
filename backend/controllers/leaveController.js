@@ -27,3 +27,20 @@ const leave = await Leave.create({
 })
 res.status(201).json({success: true, message: 'leave applied successfully', leave})
 })
+
+export const getLeaves = asyncHandler(async (req, res) => {
+
+    let leaves
+
+    if (req.user.role === "employee") {
+        leaves = await Leave.find({ employee: req.user.id })
+    } else {
+        leaves = await Leave.find().populate("employee", "name email role")
+    }
+
+    res.status(200).json({
+        success: true,
+        count: leaves.length,
+        leaves
+    })
+})

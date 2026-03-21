@@ -3,8 +3,8 @@ import User from "../models/User.js"
 
 export const getUsers = asyncHandler(async(req, res) => {
     let users
-    if (req.user.role === "admin" || req.user.role === "hr"){
-        users = await users.find().select("-password")
+    if (req.user.role === "Admin" || req.user.role === "Hr"){
+        users = await User.find().select("-password")
     } else {
         const error = new Error ('not authorized')
         error.statusCode = 403
@@ -14,7 +14,8 @@ export const getUsers = asyncHandler(async(req, res) => {
 })
 
 export const getUserProfile = asyncHandler(async(req, res) =>{
-    const user = await user.findById(req.user.id).select("-password")
+    const userId = req.user._id 
+    const user = await User.findById(userId).select("-password")
     if (!user) {
         const error = new Error('user not found')
         error.statusCode = 404
@@ -24,16 +25,16 @@ export const getUserProfile = asyncHandler(async(req, res) =>{
 })
 
 
-export const updateUSer = asyncHandler(async(req, res) => {
+export const updateUser = asyncHandler(async(req, res) => {
     const { name, email, department, role } = req.body
     const userId = req.params.id
     const user = await User.findById(userId)
     if( !user) {
         const error = new Error ('user not found')
-        user.statusCode = 403
+        error.statusCode = 403
         throw error
     }
-    if (req.user.id !== user._id.toString() && req.user.role !== "admin") {
+    if (req.user.id !== user._id.toString() && req.user.role !== "Admin") {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -41,7 +42,7 @@ export const updateUSer = asyncHandler(async(req, res) => {
     user.name = name || user.name
     user.email = email || user.email
     user.department = department || user.department
-    if (req.user.role === "admin" && role) {
+    if (req.user.role === "Admin" && role) {
         user.role = role
     }
     await user.save()
@@ -49,7 +50,7 @@ export const updateUSer = asyncHandler(async(req, res) => {
 })
  
 export const deleteUser = asyncHandler(async(req, res) => {
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "Admin") {
         const error = new Error('only admin can delete users')
         error.statusCode = 403
         throw error

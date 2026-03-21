@@ -5,6 +5,7 @@ import Task from '../models/Task.js'
 import Salary from '../models/Salary.js'
 import Attendance from '../models/Attendance.js'
 import Leave from '../models/Leave.js'
+import { application } from "express";
 
 export const predictSalary = asyncHandler(async(req, res) => {
     const {employeeId} = req.body

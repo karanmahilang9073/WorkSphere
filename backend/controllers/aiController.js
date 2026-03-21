@@ -117,3 +117,28 @@ export const getPerformanceInsights = asyncHandler(async(req, res) => {
 
     res.status(200).json({success : true, message : 'performance report generated successfully', data : report})
 })
+
+export const analyzeAttendance = asyncHandler(async(req, res) => {
+    const records = await Attendance.find().populate("employee")
+    if(!records || records.length === 0){
+        const error = new Error('no attendance records found')
+        error.statusCode = 404
+        throw error
+    }
+
+    const attendanceData = records.map((a) => {
+        return `Employee: ${a.employee?.name || "unknown"}
+        Date: ${a.date} 
+        Status: ${a.status}`
+    }).join("\n\n")
+
+    const prompt = `you are an HR analytic assistant
+    analyze the following attendance data and identify pattern
+    Attendance data: ${attendanceData}
+    Detect: employee with frequent absence, unusual attendance behaviour, late or irregular patterns, any anomalies.
+    provide a clear summary with insights`
+
+    const analysis = await aiResponse(prompt)
+
+    res.status(200).json({success : true, message : 'attendance pattern analysis generated successfully', data : analysis})
+})

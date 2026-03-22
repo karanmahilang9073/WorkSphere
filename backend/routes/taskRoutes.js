@@ -3,10 +3,11 @@ import {createTask, getAllTasks, getTask, updateTask, updateStatus, deleteTask} 
 
 const taskRouter = express.Router()
 
-router.post('/auth/', createTask)
-router.get('/auth/', getAllTasks)
-router.get('/auth/:id', getTask)
-router.put('/auth/:id', updateStatus)
-router.delete('/auth/:id', deleteTask)
+taskRouter.post('/auth/', createTask)
+taskRouter.get('/auth/', getAllTasks)
+taskRouter.get('/auth/:id', getTask)
+taskRouter.put('/auth/:id', updateTask)
+taskRouter.put('/auth/:id/status', updateStatus)
+taskRouter.delete('/auth/:id', deleteTask)
 
 export default taskRouter

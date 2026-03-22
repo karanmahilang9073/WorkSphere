@@ -3,9 +3,9 @@ import {getUsers, getUserProfile, updateUser, deleteUser} from '../controllers/u
 
 const userRouter = express.Router()
 
- userRouter.post('/auth/', getUsers)
- userRouter.post('/auth/profile', getUserProfile)
- userRouter.put('/auth/:id', updateUser)
- userRouter.delete('/auth/:id', deleteUser)
+userRouter.post('/auth/', getUsers)
+userRouter.post('/auth/profile', getUserProfile)
+userRouter.put('/auth/:id', updateUser)
+userRouter.delete('/auth/:id', deleteUser)
 
- export default userRouter
+export default userRouter

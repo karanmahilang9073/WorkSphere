@@ -3,10 +3,10 @@ import {checkIn, checkout, getMyAttendance, getAllAttendance, markAbsent} from '
 
 const attendanceRouter = express.Router()
 
-attendanceRouter.post('/auth/check-in', checkIn)
-attendanceRouter.post('/auth/check-out', checkout)
-attendanceRouter.get('/auth/me', getMyAttendance)
-attendanceRouter.get('/auth/', getAllAttendance)
-attendanceRouter.post('/auth/absent', markAbsent)
+attendanceRouter.post('/check-in', checkIn)
+attendanceRouter.post('/check-out', checkout)
+attendanceRouter.get('/me', getMyAttendance)
+attendanceRouter.get('/', getAllAttendance)
+attendanceRouter.post('/absent', markAbsent)
 
 export default attendanceRouter

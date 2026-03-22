@@ -3,10 +3,10 @@ import {applyLeave, getLeaves, updateLeaveStatus, revokeLeave, deleteLeave} from
 
 const leaveRouter = express.Router()
 
-leaveRouter.post('/auth/apply', applyLeave)
-leaveRouter.get('/auth/', getLeaves)
-leaveRouter.put('/auth/:id', updateLeaveStatus)
-leaveRouter.put('/auth/revoke/:id', revokeLeave)
-leaveRouter.delete('/auth/:id', deleteLeave)
+leaveRouter.post('/apply', applyLeave)
+leaveRouter.get('/', getLeaves)
+leaveRouter.put('/:id', updateLeaveStatus)
+leaveRouter.put('/revoke/:id', revokeLeave)
+leaveRouter.delete('/:id', deleteLeave)
 
 export default leaveRouter

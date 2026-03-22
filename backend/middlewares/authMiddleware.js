@@ -8,7 +8,6 @@ const authMiddleware = asyncHandler(async(req, res, next) => {
         error.statusCode = 401
         throw error
     }
-
     const token = header.split(" ")[1]
 
     const decoded = JWT.verify(token, process.env.JWT_SECRET)

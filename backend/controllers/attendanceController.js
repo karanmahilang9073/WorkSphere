@@ -26,11 +26,14 @@ export const checkIn = asyncHandler(async(req, res) => {
     const now = new Date()
     let shiftStart = "10:00"
     let shiftEnd = "19:00"
+
     const hour = now.getHours()
+
     if (hour >= 22 || hour < 6) {
         shiftStart: "22:00"
         shiftEnd: "06:00"
     }
+    
     const late = now.getHours() >10
     const attendance = await Attendance.create({
         employee: userId,
@@ -40,7 +43,7 @@ export const checkIn = asyncHandler(async(req, res) => {
         shiftEnd,
         late
     })
-    res.status(201).json({ success: true, message: "check-in successful"}, attandence)
+    res.status(201).json({ success: true, message: 'check-in successful'}, attendance)
 })
 
 export const checkout= asyncHandler(async(req, res) => {
@@ -68,7 +71,7 @@ export const checkout= asyncHandler(async(req, res) => {
         attendance.overtimeHours = Number((attendance.workHours - 8).toFixed(2))
     }
     await attendance.save()
-     res.status(200).json({ success: true, message: "Check-out successful", attendance })
+     res.status(200).json({ success: true, message: 'Check-out successful', attendance })
 })
 
 export const getMyAttendance = asyncHandler(async(req, res) => {
@@ -77,28 +80,25 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     const end = new Date(year, month, 0)
     const userId  = req.user.id
     const records = await Attendance.find({employee: userId, date: { $gte: start, $lte: end}}).sort({ date: 1 })
-    res.status(200).json({ success: true, message: "check-out successful", attendance})
+    res.status(200).json({ success: true, message: 'check-out successful', attendance})
 })
 
-export const getAllAttendance = asyncHandler(async (req, res) => {
-    const userId = req.user.role
-    if ( userId === "employee") {
-        const error = new Error("Not authorized")
+export const getAllAttendance = asyncHandler(async(req, res) => {
+    const userRole = req.user.role
+    if ( userRole === 'employee') {
+        const error = new Error('Not authorized')
         error.statusCode = 403
         throw error
     }
-    const records = await Attendance
-        .find()
-        .populate("employee", "name email role")
-        .sort({ date: -1 })
+    const records = await Attendance.find().populate('employee', 'name email role').sort({ date: -1 })
 
-    res.status(200).json({ success: true, count: records.length, attendance: records})
+    res.status(200).json({success: true, count: records.length, attendance: records})
 })
 
 export const markAbsent = asyncHandler(async (req, res) => {
     const { employeeId, date } = req.body
     if (!employeeId || !date) {
-        const error = new Error("Employee and date required")
+        const error = new Error('employee and date required')
         error.statusCode = 400
         throw error
     }
@@ -109,20 +109,12 @@ export const markAbsent = asyncHandler(async (req, res) => {
     })
 
     if (existing) {
-        const error = new Error("Attendance already exists")
+        const error = new Error('attendance already exists')
         error.statusCode = 400
         throw error
     }
 
-    const attendance = await Attendance.create({
-        employee: employeeId,
-        date: new Date(date),
-        status: "absent"
-    })
+    const attendance = await Attendance.create({employee: employeeId, date: new Date(date), status: 'absent'})
 
-    res.status(201).json({
-        success: true,
-        message: "Marked as absent",
-        attendance
-    })
+    res.status(201).json({success: true, message: 'marked as absent', attendance})
 })

@@ -13,7 +13,7 @@ const calculateHours = (checkIn, checkOut) => {
 }
 
 export const checkIn = asyncHandler(async(req, res) => {
-    const userId = req.user.id
+    const userId = req.user._id
     const today = getToday()
     const existing = await Attendance.findOne({ employee: userId, date: today})
     
@@ -30,11 +30,16 @@ export const checkIn = asyncHandler(async(req, res) => {
     const hour = now.getHours()
 
     if (hour >= 22 || hour < 6) {
-        shiftStart: "22:00"
-        shiftEnd: "06:00"
+        shiftStart = "22:00"
+        shiftEnd = "06:00"
     }
+
+    const shiftStartHour = 10
+    const shiftStartMinute = 0
+
+    const late = now.getHours() > shiftStartHour || (now.getHours() === shiftStartHour && now.getMinutes() > shiftStartMinute)
     
-    const late = now.getHours() >10
+    
     const attendance = await Attendance.create({
         employee: userId,
         date: today,
@@ -43,11 +48,11 @@ export const checkIn = asyncHandler(async(req, res) => {
         shiftEnd,
         late
     })
-    res.status(201).json({ success: true, message: 'check-in successful'}, attendance)
+    res.status(201).json({ success: true, message: 'check-in successful', attendance})
 })
 
 export const checkout= asyncHandler(async(req, res) => {
-    const userId = req.user.id
+    const userId = req.user._id
     const today = getToday()
     const attendance = await Attendance.findOne({employee: userId, date: today})
     if (!attendance) {
@@ -55,7 +60,7 @@ export const checkout= asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if (attendance.checkout) {
+    if (attendance.checkOut) {
         const error = new Error('already checked out')
         error.statusCode = 400
         throw error
@@ -78,9 +83,9 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     const { month, year } = req.query
     const start = new Date(year, month -1, 1)
     const end = new Date(year, month, 0)
-    const userId  = req.user.id
+    const userId  = req.user._id
     const records = await Attendance.find({employee: userId, date: { $gte: start, $lte: end}}).sort({ date: 1 })
-    res.status(200).json({ success: true, message: 'check-out successful', attendance})
+    res.status(200).json({ success: true, message: 'check-out successful', records})
 })
 
 export const getAllAttendance = asyncHandler(async(req, res) => {

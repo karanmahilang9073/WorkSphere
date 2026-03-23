@@ -13,7 +13,7 @@ export const createNotification = asyncHandler(async(req, res) => {
 })
 
 export const getMyNotifications = asyncHandler(async(req, res) => {
-    const notificationsId = req.user.id
+    const notificationsId = req.user._id
     const notifications = await Notification.find({ recipient: notificationsId}).sort({createdAt: -1})
     res.status(200).json({ success: true, count: notifications.length, notifications})
 })
@@ -26,7 +26,7 @@ export const markAsRead = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    const userId = req.user.id
+    const userId = req.user._id
     if(notification.recipient.toString() !== userId) {
         const error = new Error('not authorized')
         error.statusCode = 403
@@ -38,7 +38,7 @@ export const markAsRead = asyncHandler(async(req, res) => {
 })
 
 export const markAllAsRead = asyncHandler(async(req, res) => {
-    const notificationId = req.user.id
+    const notificationId = req.user._id
     await Notification.updateMany({ recipient: notificationId, isRead: false}, {isRead: true})
     res.status(200).json({ success: true, message: "all notification marked as read"})
 })
@@ -51,7 +51,7 @@ export const deleteNotification = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    const userId = req.user.id
+    const userId = req.user._id
     const adminId = req.user.role
     if(notification.recipient.toString() !== userId && adminId !== "admin") {
         const error = new Error('not authorized')

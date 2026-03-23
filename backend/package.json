@@ -12,13 +12,15 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@huggingface/inference": "^4.13.15",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dns": "^0.2.2",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.0"
+    "mongoose": "^9.3.0",
+    "nodemailer": "^8.0.3"
   },
   "devDependencies": {
     "install": "^0.13.0",

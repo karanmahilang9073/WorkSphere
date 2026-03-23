@@ -3,7 +3,7 @@ import User from '../models/User.js'
 import bcrypt from 'bcrypt'
 import generateToken from "../utils/JWT.js"
 
-export const register = asynchandler(async (req, res, next) => {
+export const register = asyncHandler(async (req, res, next) => {
     const {name, email, password, role} = req.body 
     if(!name || !email || !password){
         const error = new Error('all fields are required')
@@ -13,20 +13,16 @@ export const register = asynchandler(async (req, res, next) => {
 
     const existeduser = await User.findOne({email})
     if(existeduser){
-        const error = new Error('user aleady existed')
+        const error = new Error('user already existed')
         error.statusCode = 409
         throw error
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await User.create({name, email, password : hashedPassword})
+    const user = await User.create({name, email, password : hashedPassword, role})
 
-    const token = JWT.sign(
-        {id : user._id},
-        process.env.JWT_SECRET,
-        {expiresIn : '10d'}
-    )
+    const token = generateToken(user._id, user.role)
 
     res.status(200).json({success : true, token,  message : 'user created successfully', 
         user : {
@@ -75,3 +71,31 @@ export const login = asyncHandler(async(req,res) => {
     })
 })
 
+export const getProfile = asyncHandler(async(req, res) => {
+    const userId = req.user.id
+    const user = await User.findById(userId)
+    if(!user){
+        const error = new Error("user not found")
+        error.statusCode = 404
+        throw error
+    }
+    res.status(200).json({success : true, message : 'user get successfully',
+        user : {
+            id : user._id,
+            name : user.name,
+            email : user.email,
+            department : user.department,
+            position : user.position
+        }
+    })
+})
+
+export const logout = asyncHandler(async(req, res) => {
+    const userId = req.user.id
+    const user = await User.findById(userId)
+    if(user){
+        user.lastLogout = new Date()
+        await user.save()
+    }
+    res.status(200).json({success : true, message : 'user logged out successfully'})
+})

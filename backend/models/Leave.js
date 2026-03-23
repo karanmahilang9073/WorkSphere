@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const leaveSchema = new mongoose.Schema(
   {
     employee: {
-      type: mongoose.Types.objectId,
+      type: mongoose.Types.ObjectId,
       ref: "User",
       required: true,
       index: true,
@@ -23,7 +23,7 @@ const leaveSchema = new mongoose.Schema(
       default: "pending",
     },
     approvedBy: {
-      type: mongoose.Type.objectId,
+      type: mongoose.Types.ObjectId,
       ref: "User",
     },
     approvedComment: { type: String, trim: true },

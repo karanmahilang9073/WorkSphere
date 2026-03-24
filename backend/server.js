@@ -42,7 +42,7 @@ app.use('/api/ai', aiRouter)
 //global error handler
 app.use((err,req,res,next) => {
     console.error(err.stack)
-    res.status(err.status || 500).json({message : err.message || 'internal server error'})
+    res.status(err.statusCode || 500).json({message : err.message || 'internal server error'})
 })
 
 app.listen(PORT, () => {

@@ -3,6 +3,14 @@ import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
 import dns from 'dns'
 import asyncHandler from './middlewares/asyncHandler.js'
+import userRouter from './routes/userRoutes.js'
+import authRouter from './routes/authRoutes.js'
+import taskRouter from './routes/taskRoutes.js'
+import salaryRouter from './routes/salaryRoutes.js'
+import leaveRouter from './routes/leaveRoutes.js'
+import attendanceRouter from './routes/attendanceRoutes.js'
+import aiRouter from './routes/aiRoutes.js'
+import notificationRouter from './routes/notificationRoutes.js'
 
 dns.setDefaultResultOrder("ipv4first");
 
@@ -21,6 +29,16 @@ app.get('/', (req, res)=> {
 
 //database call
 connectDB()
+
+// routes
+app.use('/api/auth', authRouter)
+app.use('/api/users', userRouter)
+app.use('/api/tasks', taskRouter)
+app.use('/api/salary', salaryRouter)
+app.use('/api/leaves', leaveRouter)
+app.use('/api/attendance', attendanceRouter)
+app.use('/api/notifications', notificationRouter)
+app.use('/api/ai', aiRouter)
 
 //global error handler
 app.use(asyncHandler)

@@ -1,17 +1,15 @@
-import {InferenceClient} from '@huggingface/inference'
+import Groq from "groq-sdk";
 
-const hf = new InferenceClient(process.env.HF_API_KEY)
+const groq = new Groq({
+    apiKey : process.env.GROQ_API_KEY
+})
 
 export const aiResponse = async(prompt) => {
-    const res = await hf.textGeneration({
-        model : "mistralai/Mistral-7B-Instruct-v0.1",
-        inputs : prompt,
-        parameters : {
-            max_new_tokens : 500,
-            temperature : 0.7
-        },
+    const res = await groq.chat.completions.create({
+        model : "llama-3.1-8b-instant",
+        messages : [
+            {role : 'user', content : prompt}
+        ],
     })
-    return res.generated_text;
+    return res.choices[0].message.content
 }
-
-export default {aiResponse}

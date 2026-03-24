@@ -10,12 +10,18 @@ import leaveRouter from './routes/leaveRoutes.js'
 import attendanceRouter from './routes/attendanceRoutes.js'
 import aiRouter from './routes/aiRoutes.js'
 import notificationRouter from './routes/notificationRoutes.js'
+import cors from 'cors'
 
 dns.setDefaultResultOrder("ipv4first");
 
 dotenv.config()
 const app = express()
 app.use(express.json())
+
+app.use(cors({
+    origin : "http://localhost:5173",
+    credentials : true,
+}))
 
 const PORT = process.env.PORT || 7000
 

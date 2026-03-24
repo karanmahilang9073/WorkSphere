@@ -41,7 +41,10 @@ app.use('/api/notifications', notificationRouter)
 app.use('/api/ai', aiRouter)
 
 //global error handler
-app.use(asyncHandler)
+app.use((err,req,res,next) => {
+    console.error(err.stack)
+    res.status(err.status || 500).json({message : err.message || 'internal server error'})
+})
 
 app.listen(PORT, () => {
     console.log(`server is running on port:${PORT}`)

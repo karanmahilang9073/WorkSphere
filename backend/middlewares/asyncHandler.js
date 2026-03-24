@@ -1,11 +1,8 @@
 
-
-const asyncHandler = (err, req, res, next) => {
-    console.error(err.stack)
-
-    const statusCode = err.statusCode || 500
-    
-    res.status(statusCode).json({success : false, message : err.message || 'internal server error'})
+const asyncHandler = (fn) => {
+    return function(req, res, next) {
+        Promise.resolve(fn(req,res,next)).catch(next)
+    }
 }
 
 export default asyncHandler

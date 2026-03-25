@@ -21,7 +21,7 @@ export const welcomeTemplate = (user) => {
     const content = `
         <h3>Welcome ${user.name} 🎉</h3>
         <p>Your account has been successfully created.</p>
-
+        
         <p><strong>Email:</strong> ${user.email}</p>
         <p><strong>Role:</strong> ${user.role}</p>
 

@@ -44,4 +44,5 @@ export const useAuth = () => {
     if(!context) {
         throw new Error('useauth must be used within  authprovider')
     }
+    return context
 }

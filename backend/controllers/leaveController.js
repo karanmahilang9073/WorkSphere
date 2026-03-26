@@ -18,7 +18,7 @@ export const applyLeave = asyncHandler(async(req, res) => {
     const totalDays =  calculateDays(startDate, endDate)
 
     const leave = await Leave.create({
-        employee: req.user._id,
+        employee: req.user.id,
         leaveType,
         startDate,
         endDate,
@@ -31,7 +31,7 @@ export const applyLeave = asyncHandler(async(req, res) => {
 export const getLeaves = asyncHandler(async (req, res) => {
     let leaves
     if (req.user.role === "employee") {
-        leaves = await Leave.find({ employee: req.user._id })
+        leaves = await Leave.find({ employee: req.user.id })
     } else {
         leaves = await Leave.find().populate("employee", "name email role")
     }
@@ -53,7 +53,7 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
     }
 
     leave.status = status
-    leave.approvedBy = req.user._id
+    leave.approvedBy = req.user.id
     leave.approvalComment = comment
     await leave.save()
 
@@ -68,7 +68,7 @@ export const revokeLeave = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if (leave.employee.toString() !== req.user._id) {
+    if (leave.employee.toString() !== req.user.id) {
         const error = new Error("not authorized")
         error.statusCode = 403
         throw error

@@ -13,7 +13,7 @@ const calculateHours = (checkIn, checkOut) => {
 }
 
 export const checkIn = asyncHandler(async(req, res) => {
-    const userId = req.user._id
+    const userId = req.user.id
     const today = getToday()
     const existing = await Attendance.findOne({ employee: userId, date: today})
     
@@ -52,7 +52,7 @@ export const checkIn = asyncHandler(async(req, res) => {
 })
 
 export const checkout= asyncHandler(async(req, res) => {
-    const userId = req.user._id
+    const userId = req.user.id
     const today = getToday()
     const attendance = await Attendance.findOne({employee: userId, date: today})
     if (!attendance) {

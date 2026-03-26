@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
     description : {type : String},
     assignedTo : {type : mongoose.Types.ObjectId, ref : "User"},
     deadline : {type : String},
-    status : [{type : String, enum : ['pending', 'inProgress','missed','completed'], default : 'pending'}]
+    status : {type : String, enum : ['pending', 'inProgress','missed','completed'], default : 'pending'}
 }, {timestamps : true})
 
 const Task = new mongoose.model("Task", taskSchema)

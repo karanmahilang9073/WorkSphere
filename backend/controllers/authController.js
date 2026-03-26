@@ -24,7 +24,7 @@ export const register = asyncHandler(async (req, res, next) => {
 
     const token = generateToken(user._id, user.role)
 
-    res.status(200).json({success : true, token,  message : 'user created successfully', 
+    res.status(201).json({success : true, token,  message : 'user created successfully', 
         user : {
             id : user._id,
             name : user.name,

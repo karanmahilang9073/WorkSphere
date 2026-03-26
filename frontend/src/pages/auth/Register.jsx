@@ -18,7 +18,7 @@ function Register () {
     const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
-    const { login } = useContext(Authcontext)
+    const { login } = useContext(AuthContext)
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })

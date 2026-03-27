@@ -1,4 +1,3 @@
-
 import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext.jsx'
@@ -29,6 +28,11 @@ function Register () {
         if (!formData.name || !formData.email || !formData.password) {
             return 'all fields are required'
         }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if(!emailRegex.test(formData.email)) {
+            return 'please enter a valid email'
+        }
+
         if (formData.password.length < 6) {
             return 'password must be at least 6 characters'
         }
@@ -44,7 +48,7 @@ function Register () {
         const validationError = validate()
         if (validationError) {
             setError(validationError)
-            toast.error(validationError)
+            toast.error("validationError")
             return
         }
 
@@ -53,8 +57,8 @@ function Register () {
 
         try {
             const res = await axiosClient.post('/auth/register', {
-            name: formData.name,
-            email: formData.email,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
             password: formData.password,
             role: formData.role,
             department: formData.department
@@ -81,10 +85,11 @@ function Register () {
     }
 
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gray-100 px-4'>
-        <form onSubmit={handleSubmit} className='w-full max-w-md bg-white rounded-xl shadow-md p-6 space-y-5'>
+      <div className='min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 '>
+        {/* form  */}
+        <form onSubmit={handleSubmit} className='w-full max-w-md bg-white rounded-2xl border-2xl shadow-xl p-8 space-y-6 border border-gray-100'>
             <div className='text-center'>
-                <h2 className='text-xl font-semibold text-gray-800'>AstraaHR Registratin</h2>
+                <h2 className='text-xl font-semibold text-gray-800'>AstraaHR Registration</h2>
                 <p className='text-sm text-gray-500'>Create your employee account</p>
             </div>
 
@@ -94,27 +99,27 @@ function Register () {
 
             <div>
                 <label className='text-sm text-gray-700'>Full Name</label>
-                <input name='name' type='text' onChange={handleChange} className='w-full bporder p-2 rounded mt-1' />
+                <input name='name' type='text' value={formData.name} onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' required />
             </div>
 
             <div>
                 <label className='text-sm text-gray-700'>Email</label>
-                <input name='email' type='email' onChange={handleChange} className='w-full border p-2 rounded mt-1' />
+                <input name='email' type='email' placeholder='abc@gmail.com' onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' required />
             </div>
 
             <div>
                 <label className='text-sm text-gray-700'>Password</label>
-                <input name='password' type='password' onChange={handleChange} className='w-full border p-2 rounded mt-1' />
+                <input name='password' type='password' onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' placeholder='********' required />
             </div>
 
             <div>
                 <label className='text-sm text-gray-700'>Confirm Password</label>
-                <input name='confirmPassword' type='password' onChange={handleChange} className='w-full border p-2 rounded mt-1' />
+                <input name='confirmPassword' type='password' value={formData.confirmPassword} onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' placeholder='********' required />
             </div>
 
             <div>
                 <label className='text-sm text-gray-700'>Role</label>
-                <select name='role' onChange={handleChange} className='w-full border p-2 rounded mt-1'>
+                <select name='role' value={formData.role} onChange={handleChange} className='w-full border p-2 rounded mt-1' required>
                     <option value="Employee">Employee</option>
                     <option value="Hr">HR</option>
                     <option value="Admin">Admin</option>
@@ -123,7 +128,7 @@ function Register () {
 
             <div>
                 <label className='text-sm text-gray-700'>Department</label>
-                <input name='department' type='text' onChange={handleChange} className='w-full border p-2 rounded mt-1' />
+                <input name='department' type='text' value={formData.department} onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' required />
             </div>
 
             <button type='submit' className='w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700'>{loading ? 'Registering...' : 'Register'}</button>

@@ -5,7 +5,7 @@ import {applyLeave, getLeaves, updateLeaveStatus, revokeLeave, deleteLeave} from
 const leaveRouter = express.Router()
 
 leaveRouter.post('/apply', authMiddleware, applyLeave)
-leaveRouter.get('/', getLeaves)
+leaveRouter.get('/',authMiddleware, getLeaves)
 leaveRouter.put('/:id', authMiddleware, updateLeaveStatus)
 leaveRouter.put('/revoke/:id', revokeLeave)
 leaveRouter.delete('/:id', deleteLeave)

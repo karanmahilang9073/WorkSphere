@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-function TaskCard({task, onEdit, onDelete, onComplete}) {
+function TaskCard({task,  onDelete, onComplete}) {
     const isOverdue = useMemo(() => {
         return new Date(task.deadline < new Date() && task.status !== 'completed')
     }, [task.deadline, task.status]) 
@@ -42,8 +42,7 @@ function TaskCard({task, onEdit, onDelete, onComplete}) {
 
         {/* actions */}
         <div className="flex gap-2 mt-4">
-            <button onClick={() => onEdit(task)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded'>Edit</button>
-            <button onClick={() => onDelete(task._id)}>Delete</button>
+            <button onClick={() => onDelete(task._id)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded'>Delete</button>
 
             {task.status !== "completed" && (
                 <button onClick={() => onComplete(task._id)}>Complete</button>

@@ -1,7 +1,7 @@
-import React from 'react'
 import Register from './pages/auth/Register'
 import Login from './pages/auth/Login'
 import { Route, Routes } from 'react-router-dom'
+import TaskCard from './components/task/TaskCard'
 
 function App() {
   return (
@@ -11,6 +11,7 @@ function App() {
         <Route path='/login' element={<Login/>} />
 
       </Routes>
+      <TaskCard />
     </div>
   )
 }

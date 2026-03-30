@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { createTask, deleteTask, getTasks, updateStatus } from '../../services/TaskService'
+import { createTask, deleteTask, getTasks, updateStatus, updateTask } from '../../services/TaskService'
 import {toast} from 'react-toastify'
 import TaskCard from '../../components/task/TaskCard'
 import {getUsers} from '../../services/userService.js'
@@ -9,6 +9,7 @@ function Tasks() {
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [users, setUser] = useState([])
+    const [editTask, setEditTask] = useState(null)
 
     const [form, setForm] = useState({
         title : '',
@@ -40,7 +41,7 @@ function Tasks() {
         setUser(res)
       }
       users()
-    })
+    }, [])
 
     //form change
     const handleChange = (e) => {
@@ -82,6 +83,24 @@ function Tasks() {
         toast.error(error.response?.data?.message ||'failed to update task')
       }
     }
+
+    //update task
+    const handleUpdate = async() => {
+      if(!editTask?.title || !editTask?.assignedTo){
+        toast.error('title and assigned user required')
+        return
+      }
+      try {
+        const updated = await updateTask(editTask._id, editTask)
+        setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)))
+        toast.success('task updated')
+        setEditTask(null)
+        setForm({title : '', description : '', deadline : '', priority : 'low', assignedTo : '' })
+      } catch (error) {
+        toast.error(error.response?.data?.message || "failed to update task")
+      }
+    }
+
 
     if(loading) return <p className='text-center mt-10'>Loading...</p>
 
@@ -130,6 +149,28 @@ function Tasks() {
           ))}
         </div>
       )}
+
+      {/* edit task */}
+      {editTask && (
+        <div className='fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center'>
+          <div className="bg-white p-6 rounded w-100">
+            <h2 className='text-lg font-bold mb-4'>edit task</h2>
+
+            <input type="text" value={editTask.title} onChange={(e) => setEditTask({...editTask, title : e.target.value})} className='w-full border p-2 mb-2 rounded' />
+
+            <textarea value={editTask.description} onChange={(e) => setEditTask({...editTask, description : e.target.value})} className='w-full border p-2 mb-2 rounded'/>
+
+            <input type="date" value={editTask.deadline ? editTask.deadline.split("T")[0] : ""} onChange={(e) => setEditTask({...editTask, deadline : e.target.value})} className='w-full border p-2 mb-2 rounded' />
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setEditTask(null)} className='px-3 py-1 bg-gray-400 text-white rounded'>cancel</button>
+              <button onClick={handleUpdate} className='px-3 py-1 bg-blue-500 text-white rounded'>save</button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

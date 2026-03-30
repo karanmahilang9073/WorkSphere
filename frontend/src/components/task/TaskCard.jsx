@@ -37,7 +37,7 @@ function TaskCard({task,  onDelete, onComplete}) {
 
         {/* assigned */}
         <div className='mt-2 text-xs text-gray-500'>
-            Assigned to : {task.assignedTo?.name || "N/A"}
+            Assigned to : {task.assignedTo?.name || "unassigned"}
         </div>
 
         {/* actions */}

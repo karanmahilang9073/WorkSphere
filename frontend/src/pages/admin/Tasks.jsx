@@ -2,17 +2,20 @@ import React, { useEffect, useState } from 'react'
 import { createTask, deleteTask, getTasks, updateStatus } from '../../services/TaskService'
 import {toast} from 'react-toastify'
 import TaskCard from '../../components/task/TaskCard'
+import {getUsers} from '../../services/userService.js'
 
 function Tasks() {
     const [tasks, setTasks] = useState([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
+    const [users, setUser] = useState([])
 
     const [form, setForm] = useState({
         title : '',
         description : '',
         deadline : '',
-        priority : ''
+        priority : '',
+        assignedTo : ''
     })
 
     //fetch task
@@ -29,6 +32,15 @@ function Tasks() {
       }
       load()
     }, [])
+
+    //get users
+    useEffect(() => {
+      const users = async() => {
+        const res = await getUsers()
+        setUser(res)
+      }
+      users()
+    })
 
     //form change
     const handleChange = (e) => {
@@ -90,6 +102,13 @@ function Tasks() {
           <textarea name="description" placeholder='Description' value={form.description} onChange={handleChange} className='w-full border p-2 rounded' required />
 
           <input type="date" name='deadline' value={form.deadline} onChange={handleChange} className='w-full border p-2 rounded' required />
+
+          <select name="assignedTo" value={form.assignedTo} onChange={handleChange} className='w-full border p-2 rounded'>
+            <option value="">Select employee</option>
+            {users.map((user) => (
+              <option key={user._id} value={user._id}>{user.name}</option>
+            ))}
+          </select>
 
           <select name="priority" value={form.priority} onChange={handleChange} className='w-full border p-2 rounded'>
             <option value="low">low</option>

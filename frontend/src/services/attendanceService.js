@@ -29,7 +29,7 @@ export const getMyAttendance = async(month, year) => {
             throw {message : 'month and year are required'}
         }
         const res = await axiosClient.get(`/attendance/my?month=${month}&year=${year}`)
-        return res.data
+        return res.data.records
     } catch (error) {
         errorHandler(error)
     }

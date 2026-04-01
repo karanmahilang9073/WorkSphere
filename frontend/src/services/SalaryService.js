@@ -20,7 +20,7 @@ export const getSalaries = async(params = {}) => {
     try {
         const query = new URLSearchParams(params).toString()
         const res = await axiosClient.get(`/salary?${query}`)
-        return res.data
+        return res.data.data
     } catch (error) {
         errorHandler(error)
     }

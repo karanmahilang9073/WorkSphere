@@ -1,8 +1,8 @@
 import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext.jsx'
-import axiosClient from '../../api/axiosClient.js'
 import { toast } from 'react-toastify'
+import { register } from '../../services/AuthService.js'
 import 'react-toastify/dist/ReactToastify.css'
 
 function Register () {
@@ -32,16 +32,15 @@ function Register () {
         if(!emailRegex.test(formData.email)) {
             return 'please enter a valid email'
         }
-
         if (formData.password.length < 6) {
             return 'password must be at least 6 characters'
         }
         if (formData.password !== formData.confirmPassword) {
             return 'passwords do not match'
         }
-        
         return null
     }
+
     const handleSubmit = async(e) => {
         e.preventDefault()
 
@@ -51,23 +50,12 @@ function Register () {
             toast.error("validationError")
             return
         }
-
         setLoading(true)
         setError(null)
-
         try {
-            const res = await axiosClient.post('/auth/register', {
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            password: formData.password,
-            role: formData.role,
-            department: formData.department
-            })
-
-            login(res.data)
-
+            const res = await register(formData)
+            login(res)
             toast.success('user registered successfully')
-
             if (res.data.user.role === 'Admin') {
                 navigate('/admin')
             } else {

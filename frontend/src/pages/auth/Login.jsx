@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react'
 import {useNavigate} from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
 import { toast } from 'react-toastify'
-import axiosClient from '../../api/axiosClient'
+import {login as loginService} from '../../services/AuthService'
+
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ function Login() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axiosClient.post('/auth/login', formData)
+      const res = await loginService(formData)
       login(res.data)
       toast.success('welcome back to AstraaHR')
       navigate(res.data.user.role === 'Admin' ? '/admin' : '/employee')

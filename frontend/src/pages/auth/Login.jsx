@@ -46,7 +46,7 @@ function Login() {
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-100 px-6'>
-    <div className='w-full max-w-6xl flex rounded-2xl overflow-hidden shadow-xl'>
+    <div className='w-full max-w-md flex rounded-2xl overflow-hidden shadow-xl'>
       {/* left side  */}
       <div className='hidden lg:flex w-1/2 bg-linear-to-r from-indigo-600 to-purple-700 text-white items-center justify-center p-10'>
           <div>

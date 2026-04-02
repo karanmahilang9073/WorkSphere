@@ -18,6 +18,8 @@ function Dashboard() {
     const [salary, setSalary] = useState(null)
     const [leaves, setLeaves] = useState([])
     const [loading, setLoading] = useState(true)
+
+    const today = new Date()
     
     useEffect(() => {
         const fetchData = async() => {
@@ -27,7 +29,7 @@ function Dashboard() {
                 const taskRes = await getTasks()
                 setTask(taskRes || [])
 
-                const attendanceRes = await getMyAttendance()
+                const attendanceRes = await getMyAttendance(today.getMonth() + 1, today.getFullYear())
                 setAttendance(attendanceRes || [])
 
                 const salaryRes = await getSalaries()

@@ -31,7 +31,7 @@ function TaskCard({task,  onDelete, onComplete}) {
 
         {/* meta */}
         <div>
-            <span className={priorityColour[task.priority]}>{task.priorityColour.tpUpperCase}</span>
+            <span className={priorityColour[task.priority]}>{task.priorityColour || "NORMAL"}</span>
             <span className={isOverdue ? 'text-red-500' : 'text-gray-500'}>{new Date(task.deadline).toLocaleDateString()}</span>
         </div>
 

@@ -34,3 +34,12 @@ export const getMyAttendance = async(month, year) => {
         errorHandler(error)
     }
 }
+
+export const getAllAttendance = async() => {
+    try {
+        const res = await axiosClient.get('/attendance')
+        return res.data.records
+    } catch (error) {
+        errorHandler(error)
+    }
+}

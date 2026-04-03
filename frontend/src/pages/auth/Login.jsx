@@ -48,12 +48,12 @@ function Login() {
     <div className='min-h-screen flex items-center justify-center bg-gray-100 px-6'>
     <div className='w-full max-w-md flex rounded-2xl overflow-hidden shadow-xl'>
       {/* left side  */}
-      <div className='hidden lg:flex w-1/2 bg-linear-to-r from-indigo-600 to-purple-700 text-white items-center justify-center p-10'>
+      {/* <div className='hidden lg:flex w-1/2 bg-linear-to-r from-indigo-600 to-purple-700 text-white items-center justify-center p-10'>
           <div>
             <h1 className='text-4xl font-bold mb-4'>AstraaHR</h1>
             <p className='text-lg opacity-80'>welcome back! manage your team  efficiently</p>
           </div>
-      </div>
+      </div> */}
 
       {/* right side  */}
       <div className='w-full lg:w-1/2 flex items-center justify-center p-8'>

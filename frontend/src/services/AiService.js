@@ -54,3 +54,13 @@ export const analyzeAttendance = async() => {
         errorHandler(error)
     }
 }
+
+// chat service
+export const chat = async(message) => {
+    try {
+        const res = await axiosClient.post('/ai/chat', {message})
+        return res.data.data
+    } catch (error) {
+        errorHandler(error)
+    }
+}

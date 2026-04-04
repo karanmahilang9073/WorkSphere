@@ -2,10 +2,13 @@ import {useEffect, useState} from 'react'
 import LeaveCard from '../../components/leave/LeaveCard'
 import { getLeaves } from '../../services/LeaveService'
 import {toast} from 'react-toastify'
+import LeaveForm from '../../components/leave/LeaveForm'
+
 
 function MyLeaves() {
     const [leaves, setLeaves] = useState([])
     const [loading, setLoading] = useState(true)
+    const [showForm, setShowForm] = useState(false)
 
     useEffect(() => {
         const fetchLeaves = async() => {
@@ -34,6 +37,7 @@ function MyLeaves() {
             </div>
         )}
 
+
         {/* leave grid */}
         {leaves.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -44,6 +48,12 @@ function MyLeaves() {
         ) : (
             <p className="text-center text-gray-500">No leave request found.</p>
         )}
+
+        {/* toggle leave form button */}
+        <button onClick={() => setShowForm(!showForm)} className='bg-blue-500 text-white px-4 py-2 rounded'>
+            {showForm ? 'hide form' : 'apply leave'}
+        </button>
+        {showForm && <LeaveForm/>}
       
     </div>
   )

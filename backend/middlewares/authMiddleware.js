@@ -10,11 +10,15 @@ const authMiddleware = asyncHandler(async(req, res, next) => {
     }
     const token = header.split(" ")[1]
 
-    const decoded = JWT.verify(token, process.env.JWT_SECRET)
-
-    req.user = decoded
-
-    next()
+   try {
+     const decoded = JWT.verify(token, process.env.JWT_SECRET)
+     req.user = decoded
+     next()
+   } catch (error) {
+    console.error(new Error('invalid or expired token'))
+    error.statusCode = 401
+    throw error
+   }
 })
 
 export default authMiddleware

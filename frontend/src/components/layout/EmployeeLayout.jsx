@@ -17,6 +17,8 @@ export default function EmployeeLayout({ children }) {
           <Link to="/employee/my-leaves" className="block hover:bg-indigo-700 p-2 rounded">My Leaves</Link>
           <Link to="/employee/my-salary" className="block hover:bg-indigo-700 p-2 rounded">My Salary</Link>
           <Link to="/employee/my-tasks" className="block hover:bg-indigo-700 p-2 rounded">My Tasks</Link>
+          <Link to='/employee/notifications' className='block hover:bg-indigo-700 p-2 rounded'>Notifications</Link>
+          <Link to='/employee/helpdesk' className='block hover:bg-indigo-700 p-2 rounded'>HelpDesk</Link>
         </nav>
       </aside>
 

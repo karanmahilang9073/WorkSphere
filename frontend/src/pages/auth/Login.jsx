@@ -32,9 +32,9 @@ function Login() {
     setError(null)
     try {
       const res = await loginService(formData)
-      login(res.data)
+      login(res)
       toast.success('welcome back to AstraaHR')
-      navigate(res.data.user.role === 'Admin' ? '/admin' : '/employee')
+      navigate(res.user.role === 'Admin' ? '/admin' : '/employee')
     } catch (error) {
       const message = error.response?.data?.message || 'login failed'
       setError(message)

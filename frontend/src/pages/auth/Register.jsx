@@ -47,7 +47,7 @@ function Register () {
         const validationError = validate()
         if (validationError) {
             setError(validationError)
-            toast.error("validationError")
+            toast.error(validationError)
             return
         }
         setLoading(true)
@@ -56,7 +56,7 @@ function Register () {
             const res = await register(formData)
             login(res)
             toast.success('user registered successfully')
-            if (res.data.user.role === 'Admin') {
+            if (res.user.role === 'Admin') {
                 navigate('/admin')
             } else {
                 navigate('/employee')

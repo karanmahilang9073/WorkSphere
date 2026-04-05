@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import generateToken from "../utils/JWT.js"
 
 export const register = asyncHandler(async (req, res, next) => {
-    const {name, email, password, role} = req.body 
+    const {name, email, password, role, department} = req.body 
     if(!name || !email || !password){
         const error = new Error('all fields are required')
         error.statusCode = 400
@@ -20,7 +20,7 @@ export const register = asyncHandler(async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await User.create({name, email, password : hashedPassword, role})
+    const user = await User.create({name, email, password : hashedPassword, role, department})
 
     const token = generateToken(user._id, user.role)
 
@@ -29,7 +29,7 @@ export const register = asyncHandler(async (req, res, next) => {
             id : user._id,
             name : user.name,
             email : user.email,
-            role : role || 'employee'
+            role : user.role || 'employee'
         }
     })
 })

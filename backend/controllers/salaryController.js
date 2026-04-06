@@ -1,5 +1,6 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Salary from "../models/Salary.js";
+import User from "../models/User.js";
 
 export const createSalary =  asyncHandler(async(req, res) => {
     const {employee, baseSalary, allowance, deduction, month} = req.body 
@@ -8,37 +9,62 @@ export const createSalary =  asyncHandler(async(req, res) => {
         error.statusCode = 400
         throw error
     }
-    const netSalary = baseSalary + (allowance || 0) - (deduction || 0)
+
+    const user = await User.findById(employee)
+    if(!user){
+        const error = new Error('employee not found')
+        error.statusCode = 404
+        throw error
+    }
+
+    if(!['Hr','Admin'].includes(req.user.role)) {
+        const error = new Error('not authorized to create salary')
+        error.statusCode = 403
+        throw error
+    }
+
+    const existing = await Salary.findOne({employee, month : new Date(month)})
+    if(existing) {
+        const error = new Error('salary already exists for this month')
+        error.statusCode = 400
+        throw error
+    }
+    const monthDate = new Date(month)
     
-    const salary = await Salary.create({employee, baseSalary, allowance, deduction, month, netSalary})
+    const salary = await Salary.create({employee, baseSalary, allowance, deduction, month : monthDate})
     await salary.populate("employee", "name email")
     
     res.status(201).json({success : true, message : 'salary created successfully', data : salary})
 })
 
 export const getAllSalaries = asyncHandler(async(req, res) => {
-
     const filters = {}
-    if(req.query.status) filters.status = req.query.status
-    if(req.query.employee) filters.employee = req.query.employee
 
-    const salaries = await Salary.find(filters).populate("employee", "name email")
+    if(['Admin','Hr'].includes(req.user.role)) {
+        if(req.query.status) filters.status = req.query.status 
+        if(req.query.employee) filters.employee = req.query.emoloyee 
+    } else {
+        filters.employee = req.user.id
+    }
+
+    const salaries = await Salary.find(filters).populate("employee", "name email").sort({month : -1})
 
     res.status(200).json({success : true, count : salaries.length,  data : salaries})
 })
 
 export const getSalary = asyncHandler(async(req,res) => {
     const salaryId = req.params.id 
-    if(!salaryId){
-        const error = new Error('salary not exist')
-        error.statusCode = 400
-        throw error
-    }
 
-    const salary = await Salary.findById(salaryId)
+    const salary = await Salary.findById(salaryId).populate("employee", "name email")
     if(!salary){
         const error = new Error('salary not found')
         error.statusCode = 404
+        throw error
+    }
+
+    if(!['Hr','Admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user.id) {
+        const error = new Error('not Authorized')
+        error.statusCode = 403
         throw error
     }
 
@@ -61,42 +87,42 @@ export const updateSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    //recalculate net salary
-    let shouldRecalculate = false;
-    if (baseSalary !== undefined) {
-        salary.baseSalary = baseSalary;
-        shouldRecalculate = true;
+    if(!['Hr','Admin'].includes(req.user.role)) {
+        const error = new Error('not authorized to update salary')
+        error.statusCode = 403
+        throw error
     }
-    if (allowance !== undefined) {
-        salary.allowance = allowance;
-        shouldRecalculate = true;
-    }
-    if (deduction !== undefined) {
-        salary.deduction = deduction;
-        shouldRecalculate = true;
-    }
-    if(shouldRecalculate){
-        salary.netSalary = salary.baseSalary + salary.allowance - salary.deduction
-    }
+
+    if(baseSalary !== undefined) salary.baseSalary = baseSalary
+    if(allowance !== undefined) salary.allowance = allowance
+    if(deduction !== undefined) salary.deduction = deduction
+
     await salary.save()
 
     await salary.populate("employee", "name email")
 
-    res.status(200).json({success : true, data : salary})
+    res.status(200).json({success : true, message : 'salary updated successfully', data : salary})
 })
 
 export const updateStatus = asyncHandler(async(req, res) => {
     const salaryId = req.params.id
     const {status} = req.body 
+
     const salary = await Salary.findById(salaryId)
     if(!salary){
         const error = new Error('salary not found')
         error.statusCode = 404
         throw error
     }
+    if(!['Admin','Hr'].includes(req.user.role)) {
+        const error = new Error('not authorized to update salary status')
+        error.statusCode = 403
+        throw error
+    }
+
     const currentStatus = salary.status
     const validTransitions = {
-        pending : ['pending'],
+        pending : ['processing'],
         processing : ['paid'],
     }
     if(!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(status)) {
@@ -105,7 +131,6 @@ export const updateStatus = asyncHandler(async(req, res) => {
         throw error
     }
     salary.status = status
-    salary.processedBy = req.user._id
     await salary.save()
     await salary.populate("employee", "name email role")
 
@@ -114,9 +139,22 @@ export const updateStatus = asyncHandler(async(req, res) => {
 
 export const getSalaryByEmployee = asyncHandler(async(req, res) => {
     const employeeId = req.params.id
+
+    const user = await User.findById(employeeId)
+    if(!user){
+        const error = new Error('employee not found')
+        error.statusCode = 404
+        throw error
+    }
+
+    if(!['Admin','Hr'].includes(req.user.role) && req.user.id !== employeeId) {
+        const error = new Error('not authorized')
+        error.statusCode = 403
+        throw error
+    }
     const salaries = await Salary.find({employee : employeeId}).populate("employee", "name email role").sort({month : -1})
 
-    res.status(200).json({success : true, count : salaries.length, salaries })
+    res.status(200).json({success : true, message : 'salaries fetched successfully', count : salaries.length, salaries })
 })
 
 export const deleteSalary = asyncHandler(async(req, res) => {
@@ -130,11 +168,11 @@ export const deleteSalary = asyncHandler(async(req, res) => {
 
     if(salary.status !== "pending") {
         const error = new Error('only pending salaries can be deleted')
-        error.statusCode = 400
+        error.statusCode = 403
         throw error
     }
 
-    if(req.user.role === "employee" && salary.employee.toString() !== req.user._id.toString()){
+    if(!['Hr','Admin'].includes(req.user.role)) {
         const error = new Error('not authorized to delete salary')
         error.statusCode = 403
         throw error

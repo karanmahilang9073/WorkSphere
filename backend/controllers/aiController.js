@@ -14,8 +14,14 @@ export const predictSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
+    if(!["Admin","Hr"].includes(req.user.role)) {
+        const error = new Error('not authorized to predict salary')
+        error.statusCode = 403
+        throw error
+    }
+
     //fetch last 6 salary records
-    const  salaries = await Salary.find({employee : employeeId}).sort({month : -1}).limit(6)
+    const  salaries = await Salary.find({employee : employeeId}).sort({month : -1}).limit(6).lean()
     if(!salaries || salaries.length === 0){
         const error = new Error('no salary record found')
         error.statusCode = 404
@@ -23,7 +29,7 @@ export const predictSalary = asyncHandler(async(req, res) => {
     }
 
     //prepare salary data for prompt
-    const salaryData = salaries.map((s) => `Month: ${s.month}, Salary: ${s.ammount}`).join("\n")
+    const salaryData = salaries.map((s) => `Month: ${s.month}, Salary: ${s.amount}`).join("\n")
 
     const prompt = `you are an HR analytic assistant. based on following past salary data, predict the nexts month's salary. Salary History: ${salaryData}. give a clear predicted salary with a short explanation`
 

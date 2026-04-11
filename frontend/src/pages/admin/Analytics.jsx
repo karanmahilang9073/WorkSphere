@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import {useState, useEffect} from 'react'
 
 import { getUsers } from '../../services/userService'
 import { getTasks } from '../../services/TaskService'
@@ -9,7 +9,7 @@ import { toast } from 'react-toastify'
 
 
 function Analytics() {
-    const [stats, setStats] = useState([])
+    const [stats, setStats] = useState({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -33,7 +33,6 @@ function Analytics() {
                 const salary = salaryRes
 
                 // calculation
-
                 // total employees
                 const totalEmployees = user.length 
                 // attendance %
@@ -46,7 +45,7 @@ function Analytics() {
                 const completedTask = task.filter(t => t.status === "completed").length
                 const pendingTask = task.filter(t => t.status !== "completed").length
                 // salary stats
-                const totalSalary = salary.reduce((sum, s) => sum + s.netSalary, 0)
+                const totalSalary = salary.reduce((sum, s) => sum + (s.netSalary || 0), 0)
                 const avgSalary = salary.length > 0 ? (totalSalary / salary.length).toFixed(0) : 0
 
                 const finalStats = {
@@ -68,6 +67,7 @@ function Analytics() {
                 setStats(finalStats)
             } catch (error) {
                 console.error('error while loading stats', error)
+                setError('failed to load analytic')
                 toast.error('failed to load stats')
             } finally {
                 setLoading(false)
@@ -110,7 +110,7 @@ function Analytics() {
             <div className="bg-white shadow rounded-xl p-5">
                 <h2 className="text-gray-500 text-sm">Attendance %</h2>
                 <p className="text-2xl font-bold mt-2">
-                    {stats.attendancePercentage || 0}
+                    {stats.attendancePercentage || 0}%
                 </p>
             </div>
 
@@ -126,7 +126,7 @@ function Analytics() {
             <div className="bg-white shadow rounded-xl p-5">
                 <h2 className="text-gray-500 text-sm">Approved leaves</h2>
                 <p className="text-2xl font-bold mt-2">
-                    {stats.leave?.completed}
+                    {stats?.leave?.completed || 0}
                 </p>
             </div>
 

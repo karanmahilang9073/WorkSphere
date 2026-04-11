@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react'
 
 function TaskCard({task,  onDelete, onComplete}) {
+
+    if(!task) return null;
+
     const isOverdue = useMemo(() => {
-        return new Date(task.deadline < new Date() && task.status !== 'completed')
+        return task.deadline &&  new Date(task.deadline) < new Date() && task.status !== "completed"
     }, [task.deadline, task.status]) 
 
     const statusColor = {
@@ -23,7 +26,7 @@ function TaskCard({task,  onDelete, onComplete}) {
         {/* header */}
         <div className='flex justify-between items-center'>
             <h3 className='text-lg font-semibold'>{task.title}</h3>
-            <span className={`px-2 py-1 text-xs rounded ${statusColor[task.status]}`}>{task.status}</span>
+            <span className={`px-2 py-1 text-xs rounded ${statusColor[task.status]}`}>{task.status?.toUpperCase()}</span>
         </div>
 
         {/* description */}
@@ -31,7 +34,7 @@ function TaskCard({task,  onDelete, onComplete}) {
 
         {/* meta */}
         <div>
-            <span className={priorityColour[task.priority]}>{task.priorityColour || "NORMAL"}</span>
+            <span className={priorityColour[task.priority] || 'bg-gray-100  text-gray-700'}>{task.priority?.toUpperCase() || "NORMAL"}</span>
             <span className={isOverdue ? 'text-red-500' : 'text-gray-500'}>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'no deadline'}</span>
         </div>
 
@@ -42,10 +45,10 @@ function TaskCard({task,  onDelete, onComplete}) {
 
         {/* actions */}
         <div className="flex gap-2 mt-4">
-            <button onClick={() => onDelete(task._id)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded'>Delete</button>
+            <button onClick={() => onDelete && onDelete(task._id)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded'>Delete</button>
 
             {task.status !== "completed" && (
-                <button onClick={() => onComplete(task._id)}>Complete</button>
+                <button onClick={() =>  onComplete && onComplete(task._id)}  className='px-3 py-1 text-sm bg-green-500 text-white rounded'>Complete</button>
             )}
         </div>
       

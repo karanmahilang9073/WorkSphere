@@ -8,19 +8,20 @@ export const SocketProvider = ( {children} ) => {
 
     //connect socket
     const connectSocket = (token) => {
-        if(!token) return;
+        if(!token || socket) return;
         try {
             const newSocket = io("http://localhost:8000", {
                 auth : {token}
             })
             newSocket.on('connect', () => console.log('socket connected'))
-            newSocket.on('error', (error) => console.error('socket error', error))
+            newSocket.on('connect_error', (error) => console.error('socket error', error))
     
             setSocket(newSocket)
         } catch (error) {
             console.error('failed to connect socket:', error)
         }
     }
+
     //disconnect socket
     const disconnectSocket = () => {
         if(socket){
@@ -32,18 +33,12 @@ export const SocketProvider = ( {children} ) => {
     //cleanup
     useEffect(() => {
         return () => {
-            if(socket) socket.disconnect()
+           socket?.disconnect()
         }
-    }, [socket])
+    }, [])
 
     return (
-        <SocketContext.Provider 
-            value={{
-                socket,
-                connectSocket,
-                disconnectSocket,
-            }}
-        >
+        <SocketContext.Provider value={{socket, connectSocket, disconnectSocket}}>
             {children}
         </SocketContext.Provider>
     )

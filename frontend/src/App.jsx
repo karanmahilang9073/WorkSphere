@@ -36,22 +36,22 @@ export default function App() {
       
 
       {/* Employee Routes */}
-      <Route element={<ProtectedRoutes><EmployeeLayout><EmployeeDash /></EmployeeLayout></ProtectedRoutes>} path="/employee" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyAttendance /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-attendance" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyLeaves /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-leaves" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MySalary /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-salary" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyTasks /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-tasks" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><Notification/></EmployeeLayout></ProtectedRoutes>} path='/employee/notifications' />
-      <Route element={<ProtectedRoutes><EmployeeLayout><Helpdesk/></EmployeeLayout></ProtectedRoutes>} path='/employee/helpdesk' />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><EmployeeDash /></EmployeeLayout></ProtectedRoutes>} path="/employee" />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><MyAttendance /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-attendance" />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><MyLeaves /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-leaves" />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><MySalary /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-salary" />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><MyTasks /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-tasks" />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><Notification/></EmployeeLayout></ProtectedRoutes>} path='/employee/notifications' />
+      <Route element={<ProtectedRoutes role='Employee'><EmployeeLayout><Helpdesk/></EmployeeLayout></ProtectedRoutes>} path='/employee/helpdesk' />
 
       {/* Admin Routes */}
-      <Route element={<ProtectedRoutes><AdminLayout><Dashboard /></AdminLayout></ProtectedRoutes>} path="/admin" />
-      <Route element={<ProtectedRoutes><AdminLayout><Employees /></AdminLayout></ProtectedRoutes>} path="/admin/employees" />
-      <Route element={<ProtectedRoutes><AdminLayout><Attendance /></AdminLayout></ProtectedRoutes>} path="/admin/attendance" />
-      <Route element={<ProtectedRoutes><AdminLayout><Leave /></AdminLayout></ProtectedRoutes>} path="/admin/leaves" />
-      <Route element={<ProtectedRoutes><AdminLayout><Tasks /></AdminLayout></ProtectedRoutes>} path="/admin/tasks" />
-      <Route element={<ProtectedRoutes><AdminLayout><Compensations /></AdminLayout></ProtectedRoutes>} path="/admin/compensation" />
-      <Route element={<ProtectedRoutes><AdminLayout><Analytics /></AdminLayout></ProtectedRoutes>} path="/admin/analytics" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Dashboard /></AdminLayout></ProtectedRoutes>} path="/admin" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Employees /></AdminLayout></ProtectedRoutes>} path="/admin/employees" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Attendance /></AdminLayout></ProtectedRoutes>} path="/admin/attendance" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Leave /></AdminLayout></ProtectedRoutes>} path="/admin/leaves" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Tasks /></AdminLayout></ProtectedRoutes>} path="/admin/tasks" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Compensations /></AdminLayout></ProtectedRoutes>} path="/admin/compensation" />
+      <Route element={<ProtectedRoutes role='Admin'><AdminLayout><Analytics /></AdminLayout></ProtectedRoutes>} path="/admin/analytics" />
 
       <Route path='/' element={<Login/>} />
 

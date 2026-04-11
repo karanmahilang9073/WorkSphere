@@ -14,7 +14,6 @@ function ProtectedRoutes({children, role}) {
     if(role && user.role !== role) {
         return <Navigate to='/login' replace />
     }
-
   return children
 }
 

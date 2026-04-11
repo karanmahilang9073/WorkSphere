@@ -56,7 +56,7 @@ function Register () {
             const res = await register(formData)
             login(res)
             toast.success('user registered successfully')
-            if (res.user.role === 'Admin') {
+            if (res.user?.role.toLowerCase() === 'admin') {
                 navigate('/admin')
             } else {
                 navigate('/employee')
@@ -75,7 +75,7 @@ function Register () {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 px-4 '>
         {/* form  */}
-        <form onSubmit={handleSubmit} className='w-full max-w-md bg-white rounded-2xl border-2xl shadow-xl p-8 space-y-6 border border-gray-100'>
+        <form onSubmit={handleSubmit} className='w-full max-w-md bg-white rounded-2xl border-2 shadow-xl p-8 space-y-6  border-gray-100'>
             <div className='text-center'>
                 <h2 className='text-xl font-semibold text-gray-800'>AstraaHR Registration</h2>
                 <p className='text-sm text-gray-500'>Create your employee account</p>
@@ -87,7 +87,7 @@ function Register () {
 
             <div>
                 <label className='text-sm text-gray-700'>Full Name</label>
-                <input name='name' type='text' value={formData.name} onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' required />
+                <input name='name' type='text' autoFocus value={formData.name} onChange={handleChange} className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200 bg-gray-50 focus:bg-white' required />
             </div>
 
             <div>

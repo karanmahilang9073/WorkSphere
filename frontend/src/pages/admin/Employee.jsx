@@ -25,7 +25,6 @@ function Employee() {
     }, [])
 
     const handleEdit = async(id, data) => {
-        setLoading(true)
         setError(null)
         try {
             const res = await updateUser(id, data)
@@ -33,13 +32,10 @@ function Employee() {
         } catch (error) {
             console.error('error while updating user', error)
             toast.error('failed to update user')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
 
     const handleDelete = async(id) => {
-        setLoading(true)
         setError(null)
         try {
             await deleteUser(id)
@@ -48,9 +44,7 @@ function Employee() {
         } catch (error) {
             console.error('failed to delete user', error)
             toast.error('failed to delete user')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
 
 
@@ -74,7 +68,7 @@ function Employee() {
 
         {/* empty state */}
         {!loading && !error && employees.length === 0 && (
-            <div className="text-gray-500 text-center py-4">no employees record found</div>
+            <div className="text-gray-500 text-center py-4">no employee records found</div>
         )}
 
         {/* table */}
@@ -90,7 +84,7 @@ function Employee() {
                             <th className='p-3 border-b'>Role</th>
                             <th className='p-3 border-b'>Action</th>
                         </tr>
-                    </thead>\
+                    </thead>
                     
                     {/* table body */}
                     <tbody>
@@ -103,7 +97,7 @@ function Employee() {
                             
                             {/* actions */}
                             <td className='p-3 border-b text-center space-x-2'>
-                                <button onClick={() => handleEdit(emp)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
+                                <button onClick={() => handleEdit(emp._id, emp)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
                                     edit
                                 </button>
                                 <button onClick={() => handleDelete(emp._id)} className='px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-700'>

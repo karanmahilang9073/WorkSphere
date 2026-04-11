@@ -18,7 +18,7 @@ function Compensation() {
                 setSalaries(res)
             } catch (error) {
                 console.error('error while loading salaries', error)
-                toast.error('failed to fetch tasks')
+                toast.error('failed to fetch salaries')
             } finally {
                 setLoading(false)
             }
@@ -27,11 +27,10 @@ function Compensation() {
     }, [])
 
     const handleUpdate = async(salaryId) => {
-        setLoading(true)
         setError(null)
         try {
             const res = await updateSalary(salaryId)
-            setSalaries(res)
+            setSalaries(prev => prev.map(s => s._id === salaryId ? res : s))
             toast.success('salary updated successfully')
         } catch (error) {
             console.error('error while updating task', error)
@@ -42,12 +41,11 @@ function Compensation() {
     }
 
     const handleDelete = async(salaryId) => {
-        setLoading(true)
         setError(null)
         try {
-            const res = await deleteSalary(salaryId)
-            setSalaries(res)
-            toast.success('salary deleted succesfully')
+            await deleteSalary(salaryId)
+            setSalaries(prev => prev.filter(s => s._id !== salaryId))
+            toast.success('salary deleted successfully')
         } catch (error) {
             console.error('error while deleting salary', error)
             toast.error('failed to delete salary')

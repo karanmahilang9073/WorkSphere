@@ -18,7 +18,7 @@ function Leaves() {
                 setLeaves(res)
             } catch (error) {
                 console.error('error while loading leaves', error)
-                toast.error('failed to fetch leavess')
+                toast.error('failed to fetch leaves')
             } finally {
                 setLoading(false)
             }
@@ -27,22 +27,18 @@ function Leaves() {
     }, [])
 
     const handleApprove = async(leaveId) => {
-        setLoading(true)
         setError(null)
         try {
             const updatedLeave = await updateLeaveStatus(leaveId, "approved")
-            setLeaves(leave => leave.map(l => l._id === leaveId ? updatedLeave : l))
+            setLeaves(prev => prev.map(l => l._id === leaveId ? updatedLeave : l))
             toast.success('leave approved successfully')
         } catch (error) {
             console.error('error while approving', error)
             toast.error('failed to approve leave')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
 
     const handleReject = async(leaveId) => {
-        setLoading(true)
         setError(null)
         try {
             const updatedLeave = await updateLeaveStatus(leaveId, "rejected")
@@ -51,11 +47,8 @@ function Leaves() {
         } catch (error) {
             console.error('error while rejecting', error)
             toast.error('failed to reject leave')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
-
 
   return (
     <div className='p-4 bg-white shadow rounded-lg'>

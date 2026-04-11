@@ -1,6 +1,6 @@
 import React from 'react'
 
-function LeaveCard({leave}) {
+function LeaveCard({leave, onApprove, onReject}) {
     const status = {
         pending : 'bg-yellow-100 text-yellow-700',
         approved : 'bg-green-100 text-green-700',
@@ -26,6 +26,14 @@ function LeaveCard({leave}) {
         {/* reason */}
         {leave.reason && (
             <p className="text-sm text-gray-700">{leave.reason}</p>
+        )}
+
+        {leave.status === "pending" && onApprove && onReject &&  (
+            <div className="flex gap-2 mt-4">
+                <button onClick={() => onApprove(leave._id)} className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700'>Approve</button>
+                <button onClick={() => onReject(leave._id)} className='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700'>Reject</button>
+                
+            </div>
         )}
       
     </div>

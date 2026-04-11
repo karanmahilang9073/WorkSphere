@@ -9,7 +9,7 @@ export const createNotification = asyncHandler(async(req, res) => {
         error.statusCode = 400
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

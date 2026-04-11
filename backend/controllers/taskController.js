@@ -18,7 +18,7 @@ export const createTask = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)){
         const error = new Error('not authorized to create task')
         error.statusCode = 403
         throw error
@@ -32,7 +32,7 @@ export const createTask = asyncHandler(async(req, res) => {
 
 export const getAllTasks = asyncHandler(async(req, res) => {
     let tasks 
-    if(['Hr','Admin'].includes(req.user.role)){
+    if(['Hr','Admin','hr','admin'].includes(req.user.role)){
         tasks = await Task.find().populate("assignedTo", "name email").sort({createdAt : -1})
     } else {
         tasks = await Task.find({assignedTo : req.user.id}).populate("assignedTo", "name email").sort({createdAt : -1})
@@ -49,7 +49,7 @@ export const getTask =  asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -73,7 +73,7 @@ export const updateTask = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -103,7 +103,7 @@ export const updateStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -128,7 +128,7 @@ export const deleteTask = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

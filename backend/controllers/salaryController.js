@@ -17,7 +17,7 @@ export const createSalary =  asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to create salary')
         error.statusCode = 403
         throw error
@@ -40,7 +40,7 @@ export const createSalary =  asyncHandler(async(req, res) => {
 export const getAllSalaries = asyncHandler(async(req, res) => {
     const filters = {}
 
-    if(['Admin','Hr'].includes(req.user.role)) {
+    if(['Hr','Admin','hr','admin'].includes(req.user.role)) {
         if(req.query.status) filters.status = req.query.status 
         if(req.query.employee) filters.employee = req.query.emoloyee 
     } else {
@@ -62,7 +62,7 @@ export const getSalary = asyncHandler(async(req,res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user.id) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user.id) {
         const error = new Error('not Authorized')
         error.statusCode = 403
         throw error
@@ -87,7 +87,7 @@ export const updateSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to update salary')
         error.statusCode = 403
         throw error
@@ -114,7 +114,7 @@ export const updateStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Admin','Hr'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to update salary status')
         error.statusCode = 403
         throw error
@@ -147,7 +147,7 @@ export const getSalaryByEmployee = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Admin','Hr'].includes(req.user.role) && req.user.id !== employeeId) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && req.user.id !== employeeId) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -172,7 +172,7 @@ export const deleteSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to delete salary')
         error.statusCode = 403
         throw error

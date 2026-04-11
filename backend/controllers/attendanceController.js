@@ -136,7 +136,7 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
-    if(!["Admin","Hr"].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to mark absent')
         error.statusCode = 403
         throw error

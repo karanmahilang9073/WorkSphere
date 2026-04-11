@@ -49,7 +49,7 @@ export const getLeaves = asyncHandler(async (req, res) => {
     if(req.user.role === "Employee") {
         leaves = await Leave.find({employee : employeeId}).populate("employee", "name email role").sort({createdAt : -1})
     } else {
-        leaves = await Leave.Find().populate("employee", "name email role").sort({createdAt : -1})
+        leaves = await Leave.find().populate("employee", "name email role").sort({createdAt : -1})
     }
     res.status(200).json({success: true, count: leaves.length, leaves})
 })
@@ -63,7 +63,7 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('you are not authorized to update leave status')
         error.statusCode = 403
         throw error

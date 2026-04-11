@@ -85,11 +85,8 @@ function Leaves() {
         {!loading && !error && leaves.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {leaves.map((l) => (
-                    <>
-                    <LeaveCard key={l._id} leave={l} />
-                    <button onClick={() => handleApprove(l._id)} className='bg-green-500 text-white rounded-md hover:bg-green-700'>Approve</button>
-                    <button onClick={() => handleReject(l._id)} className='bg-red-500 text-white rounded-md hover:bg-red-700'>Reject</button>
-                    </>
+                    
+                    <LeaveCard key={l._id} leave={l} onApprove={handleApprove} onReject={handleReject} />
                     
                 ))}
                 

@@ -3,7 +3,7 @@ import User from "../models/User.js"
 
 // get users
 export const getUsers = asyncHandler(async(req, res) => {
-    if(!["Admin","Hr"].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

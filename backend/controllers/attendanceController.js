@@ -13,10 +13,16 @@ const calculateHours = (checkIn, checkOut) => {
 }
 
 export const checkIn = asyncHandler(async(req, res) => {
+    if(req.user.role !== "Employee") {
+        const error = new Error('only employees can checkIn')
+        error.statusCode = 403
+        throw error
+    }
+
     const userId = req.user.id
     const today = getToday()
+
     const existing = await Attendance.findOne({ employee: userId, date: today})
-    
     if(existing) {
         const error = new Error('already checked in today')
         error.statusCode = 400
@@ -24,36 +30,39 @@ export const checkIn = asyncHandler(async(req, res) => {
     }
 
     const now = new Date()
-    let shiftStart = "10:00"
-    let shiftEnd = "19:00"
-
     const hour = now.getHours()
 
-    if (hour >= 22 || hour < 6) {
-        shiftStart = "22:00"
-        shiftEnd = "06:00"
+    const shifts = {
+        day : {start : '10:00', startHour : 10, startMin : 0, end : '19:00'},
+        night : {start : '22:00', startHour : 22, startMin : 0, end : '06:00'},
     }
 
-    const shiftStartHour = 10
-    const shiftStartMinute = 0
+    // determine night shift dynamically
+    const isNightShift = hour >= 22 || hour < 6
+    const shift = isNightShift ? shifts.night : shifts.day
 
-    const late = now.getHours() > shiftStartHour || (now.getHours() === shiftStartHour && now.getMinutes() > shiftStartMinute)
-    
+    const late = hour > shift.startHour || (hour === shift.startHour && now.getMinutes() > shift.startMin)
     
     const attendance = await Attendance.create({
         employee: userId,
         date: today,
         checkIn: now,
-        shiftStart,
-        shiftEnd,
+        shiftStart : shift.start,
+        shiftEnd : shift.end,
         late
     })
     res.status(201).json({ success: true, message: 'check-in successful', attendance})
 })
 
 export const checkout= asyncHandler(async(req, res) => {
+    if(req.user.role !== "Employee") {
+        const error = new Error('only employee can check out')
+        error.statusCode = 403
+        throw error
+    }
     const userId = req.user.id
     const today = getToday()
+
     const attendance = await Attendance.findOne({employee: userId, date: today})
     if (!attendance) {
         const error = new Error('check-in not found')
@@ -65,6 +74,12 @@ export const checkout= asyncHandler(async(req, res) => {
         error.statusCode = 400
         throw error
     }
+    if(!attendance.checkIn) {
+        const error = new Error('inalid check-in record')
+        error.statusCode = 400
+        throw error
+    }
+
     const now = new Date()
     attendance.checkOut = now
 
@@ -72,30 +87,43 @@ export const checkout= asyncHandler(async(req, res) => {
     attendance.workHours = Number(hours.toFixed(2))
 
     //overtime
-    if (attendance.workHours >8) {
-        attendance.overtimeHours = Number((attendance.workHours - 8).toFixed(2))
+    const OVERTME_THRESHOLD = 8
+    if (attendance.workHours > OVERTME_THRESHOLD) {
+        attendance.overtimeHours = Number((attendance.workHours - OVERTME_THRESHOLD).toFixed(2))
     }
     await attendance.save()
      res.status(200).json({ success: true, message: 'Check-out successful', attendance })
 })
 
 export const getMyAttendance = asyncHandler(async(req, res) => {
-    const { month, year } = req.query
+    if(req.user.role !== "Employee") {
+        const error = new Error('only employee can view their attendance')
+        error.statusCode = 403
+        throw error
+    }
+    let { month, year } = req.query
+    month = parseInt(month)
+    year = parseInt(year)
+    if(!month || !year || month < 1 || month > 12 || isNaN(year)){
+        const error = new Error('invalid month (1-12) ans year required')
+        error.statusCode = 400
+        throw error
+    }
+    // date range
     const start = new Date(year, month -1, 1)
     const end = new Date(year, month, 0)
     const userId  = req.user._id
     const records = await Attendance.find({employee: userId, date: { $gte: start, $lte: end}}).sort({ date: 1 })
-    res.status(200).json({ success: true, message: 'check-out successful', records})
+    res.status(200).json({ success: true, message: 'attendance record retrieved', count : records.length, records})
 })
 
 export const getAllAttendance = asyncHandler(async(req, res) => {
-    const userRole = req.user.role
-    if ( userRole === 'employee') {
+    if ( req.user.role !== 'employee') {
         const error = new Error('Not authorized')
         error.statusCode = 403
         throw error
     }
-    const records = await Attendance.find().populate('employee', 'name email role').sort({ date: -1 })
+    const records = await Attendance.find().populate('employee', 'name email role').sort({ date: -1 }).lean()
 
     res.status(200).json({success: true, count: records.length, attendance: records})
 })
@@ -108,9 +136,21 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
+    if(!["Admin","Hr"].includes(req.user.role)) {
+        const error = new Error('not authorized to mark absent')
+        error.statusCode = 403
+        throw error
+    }
+
+    const selectDate = new Date(date)
+    selectDate.setHours(0,0,0,0)
+
+    const nextDay = new Date(selectDate)
+    nextDay.setDate(nextDay.getDate() + 1)
+
     const existing = await Attendance.findOne({
         employee: employeeId,
-        date: new Date(date)
+        date: {$gte : selectDate, $lt : nextDay}
     })
 
     if (existing) {
@@ -119,7 +159,7 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
-    const attendance = await Attendance.create({employee: employeeId, date: new Date(date), status: 'absent'})
+    const attendance = await Attendance.create({employee: employeeId, date: selectDate, status: 'absent'})
 
     res.status(201).json({success: true, message: 'marked as absent', attendance})
 })

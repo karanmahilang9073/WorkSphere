@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react"
 
-const AuthContext = createContext()
+ export const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         try {
@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('invalid user data in localStorage', error)
             localStorage.removeItem('user')
+        } finally {
+            setLoading(false)
         }
     }, [])
 

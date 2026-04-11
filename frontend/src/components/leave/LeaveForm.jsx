@@ -4,8 +4,8 @@ import { toast } from 'react-toastify'
 
 
 function LeaveForm() {
-    const [startDate, setStartDate] = useState()
-    const [endDate, setEndDate] = useState()
+    const [startDate, setStartDate] = useState('')
+    const [endDate, setEndDate] = useState('')
     const [leaveType, setLeaveType] = useState('Sick')
     const [reason, setReason] = useState('')
     const [loading, setLoading] = useState(false)
@@ -27,6 +27,7 @@ function LeaveForm() {
             setStartDate('')
             setEndDate('')
             setReason('')
+            setLeaveType('Sick')
         } catch (error) {
             console.error('error while applying leave', error)
             toast.error('failed to apply for leave')
@@ -34,7 +35,6 @@ function LeaveForm() {
             setLoading(false)
         }
     }
-
 
   return (
     <div className='p-4 bg-white shadow rounded-lg max-w-md mx-auto'>
@@ -54,24 +54,24 @@ function LeaveForm() {
             {/* leave type */}
             <div>
                 <label className='block text-sm mb-1'>Leave type</label>
-                <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} className='w-full border p-2 rounded-none'>
-                    <option value="">Sick</option>
-                    <option value="">Casual</option>
-                    <option value="">Weekoff</option>
-                    <option value="">Earned</option>
+                <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} className='w-full border p-2 rounded'>
+                    <option value="Sick">Sick</option>
+                    <option value="Casual">Casual</option>
+                    <option value="Weekoff">Weekoff</option>
+                    <option value="Earned">Earned</option>
                 </select>
             </div>
             
             {/* start date */}
             <div>
                 <label className='block text-sm mb-1'>start date</label>
-                <input type="date" value={startDate || ''} onChange={(e) => setStartDate(e.target.value)} className='w-full border p-2 rounded' placeholder='select start date' />
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className='w-full border p-2 rounded' placeholder='select start date' />
             </div>
 
             {/* end date */}
             <div>
                 <label className='block text-sm mb-1'>end date</label>
-                <input type="date" value={endDate || ''} onChange={(e) => setEndDate(e.target.value)} className='w-full border p-2 rounded' placeholder='select end date'  />
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className='w-full border p-2 rounded' placeholder='select end date'  />
             </div>
 
             {/* reason */}

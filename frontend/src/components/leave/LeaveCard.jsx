@@ -7,17 +7,19 @@ function LeaveCard({leave, onApprove, onReject}) {
         rejected : 'bg-red-100 text-red-700'
     }
 
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('default', {day : 'numeric', month : 'short', year : 'numeric'})
-    }
+    if(!leave) return null;
 
+    const formatDate = (date) => {
+        if(!date) return 'invalid date'
+        return new Date(date).toLocaleDateString('en-IN', {day : 'numeric', month : 'short', year : 'numeric'})
+    }
 
   return (
     <div className='bg-white shadow-md rounded-2xl p-5 w-full max-w-md border'>
         {/* top section */}
         <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold capitalize">{leave.type} Leave</h2>
-            <span className={`px-3 pt-1 text-sm rounded-full font-medium ${status[leave.status] || 'bg-gray-100 text-gray-700'}`}>{leave.status}</span>
+            <span className={`px-3 pt-1 text-sm rounded-full font-medium ${status[leave.status] || 'bg-gray-100 text-gray-700'}`}>{leave.status?.toUpperCase()}</span>
         </div>
 
         {/* date range */}
@@ -30,8 +32,8 @@ function LeaveCard({leave, onApprove, onReject}) {
 
         {leave.status === "pending" && onApprove && onReject &&  (
             <div className="flex gap-2 mt-4">
-                <button onClick={() => onApprove(leave._id)} className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700'>Approve</button>
-                <button onClick={() => onReject(leave._id)} className='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700'>Reject</button>
+                <button onClick={() => onApprove(leave._id)} className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700 transition'>Approve</button>
+                <button onClick={() => onReject(leave._id)} className='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition'>Reject</button>
                 
             </div>
         )}

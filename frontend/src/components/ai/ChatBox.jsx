@@ -14,7 +14,7 @@ function ChatBox() {
 
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({behavior : 'smooth'})
-    }, [messageEndRef])
+    }, [messages])
 
     const handleSend = async() => {
         const message = currentMessage.trim()
@@ -31,7 +31,8 @@ function ChatBox() {
             setMessages((prev) => [...prev, aiMessage])
         } catch (error) {
             console.error('error while chat', error)
-            toast.error('failed to chat with ai')
+            setError('failed to chat with AI')
+            toast.error('failed to chat with AI')
         } finally {
             setLoading(false)
         }
@@ -40,13 +41,6 @@ function ChatBox() {
 
   return (
     <div className='flex flex-col h-125 border rounded-lg p-4'>
-    
-        {/* loading */}
-        {loading && (
-            <div className="flex justify-center py-6">
-                <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-        )}
 
         {/* error */}
         {error && (
@@ -57,7 +51,7 @@ function ChatBox() {
       {/* message container */}
       <div className="flex-1 overflow-y-auto space-y-2 mb-4">
         {messages.map((msg, index) => (
-            <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={msg.text + index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`px-4 py-2 rounded-lg max-w-xs ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
                     {msg.text}
                 </div>
@@ -80,7 +74,7 @@ function ChatBox() {
         <div className="flex gap-2 mt-4">
             <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()} placeholder='Type a message...' className='flex-1 border rounded-lg px-3 py-2 outline-none' />
 
-            <button onClick={handleSend} disabled={loading} className='bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50'>
+            <button onClick={handleSend} disabled={loading || !currentMessage.trim()} className='bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50'>
                 send
             </button>
         </div>

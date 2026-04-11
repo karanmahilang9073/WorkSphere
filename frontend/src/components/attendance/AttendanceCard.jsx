@@ -1,13 +1,17 @@
 import React from 'react'
 
 function AttendanceCard({ attendance }) {
+
   const formatTime = (date) => {
-    if (!date) return 'Not recorded'
-    return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    if (!date) return 'not recorded'
+    return new Date(date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
   }
 
+  if(!attendance) return null;
+
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+    if(!date) return "invalid date"
+    return new Date(date).toLocaleDateString('en-IN', { month: 'short', day: '2-digit', year: 'numeric' })
   }
 
   const statusColor = {
@@ -23,8 +27,8 @@ function AttendanceCard({ attendance }) {
           <p className='text-sm text-gray-500'>Date</p>
           <p className='text-lg font-semibold'>{formatDate(attendance.date)}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor[attendance.status] || statusColor.absent}`}>
-          {attendance.status}
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor[attendance.status?.toLowerCase()] || statusColor.absent}`}>
+          {attendance.status?.toUpperCase()}
         </span>
       </div>
 

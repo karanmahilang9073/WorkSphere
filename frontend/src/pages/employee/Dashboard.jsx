@@ -23,15 +23,14 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
+        setLoading(true)
       try {
-        const [taskRes, attendanceRes, salaryRes, leaveRes] = await Promise.all(
-          [
+        const [taskRes, attendanceRes, salaryRes, leaveRes] = await Promise.all([
             getTasks(),
             getMyAttendance(today.getMonth() + 1, today.getFullYear()),
             getSalaries(),
             getLeaves(),
-          ],
-        );
+        ]);
         setTask(taskRes || []);
         setAttendance(attendanceRes || []);
         setSalary(salaryRes || []);

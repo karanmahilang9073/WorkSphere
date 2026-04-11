@@ -16,12 +16,17 @@ function MyAttendance() {
         const fetchAttendance = async() => {
             setLoading(true)
             setError(null)
+            if(!month || !year) {
+                setLoading(false)
+                return
+            }
             try {
                 const data = await getMyAttendance(month, year)
                 setAttendance(data)
             } catch (error) {
                 console.error('error fetching attendance', error)
                 toast.error('failed to fetch attendance')
+                setError('failed to fetch attendance')
             } finally {
                 setLoading(false)
             }
@@ -39,7 +44,7 @@ function MyAttendance() {
             {/* filter */}
             <div className="flex gap-2">
                 <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className='border rounded px-3 py-2'>
-                    <option name="" id="">Select Month</option>
+                    <option value="">Select Month</option>
                     {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => 
                         <option value={m} key={m}>{m}</option>
                     )}
@@ -75,8 +80,8 @@ function MyAttendance() {
         {/* grid */}
         {!loading && !error && attendance.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {attendance.map((record, index) => (
-                    <AttendanceCard key={index} attendance={record} />
+                {attendance.map((record) => (
+                    <AttendanceCard key={record._id} attendance={record} />
                 ))}
             </div>
         )}

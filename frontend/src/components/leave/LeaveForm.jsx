@@ -6,12 +6,13 @@ import { toast } from 'react-toastify'
 function LeaveForm() {
     const [startDate, setStartDate] = useState()
     const [endDate, setEndDate] = useState()
+    const [leaveType, setLeaveType] = useState('Sick')
     const [reason, setReason] = useState('')
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async(e) => {
         e.preventDefault()
-        if(!startDate || !endDate || !reason.trim()){
+        if(!leaveType || !startDate || !endDate || !reason.trim()){
             toast.error('all fields are required')
             return
         }
@@ -21,7 +22,7 @@ function LeaveForm() {
         }
         try {
             setLoading(true)
-            await applyLeave({startDate, endDate, reason})
+            await applyLeave({leaveType, startDate, endDate, reason})
             toast.success('leave applied successfully')
             setStartDate('')
             setEndDate('')
@@ -50,6 +51,17 @@ function LeaveForm() {
 
         {/* form */}
         <form onSubmit={handleSubmit}>
+            {/* leave type */}
+            <div>
+                <label className='block text-sm mb-1'>Leave type</label>
+                <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} className='w-full border p-2 rounded-none'>
+                    <option value="">Sick</option>
+                    <option value="">Casual</option>
+                    <option value="">Weekoff</option>
+                    <option value="">Earned</option>
+                </select>
+            </div>
+            
             {/* start date */}
             <div>
                 <label className='block text-sm mb-1'>start date</label>

@@ -9,7 +9,7 @@ const errorHandler = (error) => {
 //apply leave
 export const applyLeave = async(leaveData) => {
     try {
-        const res = await axiosClient.post('/leaves', leaveData)
+        const res = await axiosClient.post('/leaves/apply', leaveData)
         return res.data.leave
     } catch (error) {
         throw errorHandler(error)

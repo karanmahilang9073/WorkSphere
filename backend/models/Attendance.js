@@ -22,8 +22,7 @@ attendanceSchema.pre("save", function(next){
     next()
 })
 
-attendanceSchema.index({employee : 1, date : 1})
-
 attendanceSchema.index({employee: 1, date: 1}, {unique: true})
+
 const Attendance = mongoose.model("Attendance", attendanceSchema);
 export default Attendance

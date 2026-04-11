@@ -23,7 +23,6 @@ leaveSchema.pre('save', function(next){
     const diff = this.endDate - this.startDate
     this.totalDays = diff / (1000 * 60 * 60 * 24) + 1
   }
-  next()
 })
 
 leaveSchema.index({employee : 1, status : 1})

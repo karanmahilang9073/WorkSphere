@@ -11,6 +11,7 @@ export default function AdminLayout({ children }) {
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-4">
         <h2 className="text-2xl font-bold mb-8">AstraaHR Admin</h2>
+        <hr class="border-t border-gray-300 my-4" />
         <nav className="space-y-4">
           <Link to="/admin" className="block hover:bg-gray-700 p-2 rounded">Dashboard</Link>
           <Link to="/admin/employees" className="block hover:bg-gray-700 p-2 rounded">Employees</Link>

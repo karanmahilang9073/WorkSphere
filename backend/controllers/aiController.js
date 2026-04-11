@@ -150,7 +150,7 @@ export const analyzeAttendance = asyncHandler(async(req, res) => {
 })
 
 export const aiChat = asyncHandler(async(req, res) => {
-    const userId = req.user._id
+    const userId = req.user.id
     const {message} = req.body
     if(!message || message.trim() === ""){
         const error = new Error('Message is required')
@@ -158,7 +158,7 @@ export const aiChat = asyncHandler(async(req, res) => {
         throw error
     }
     const aiReply = await aiResponse(message)
-    const chatRecord = await AiChat.create({employee : userId,message, response : aiReply})
+    const chatRecord = await AiChat.create({employee : userId, message, response : aiReply})
 
     return res.status(200).json({success : true, 
         data : {

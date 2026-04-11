@@ -36,7 +36,7 @@ function Login() {
       toast.success('welcome back to AstraaHR')
       navigate(res.user.role === 'Admin' ? '/admin' : '/employee')
     } catch (error) {
-      const message = error.response?.data?.message || 'login failed'
+      const message = error.message || 'login failed'
       setError(message)
       toast.error(message)
     } finally {
@@ -56,7 +56,7 @@ function Login() {
       </div> */}
 
       {/* right side  */}
-      <div className='w-full lg:w-1/2 flex items-center justify-center p-8'>
+      <div className='w-full  flex items-center justify-center p-8'>
         <form onSubmit={handleSubmit} className='w-full max-w-md bg-white p-8 rounded-xl shadow-lg'>
           <h2 className='text-2xl font-bold mb-6 text-center'>Login to your account</h2>
 

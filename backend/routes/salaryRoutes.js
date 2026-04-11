@@ -5,7 +5,7 @@ import { createSalary, deleteSalary, getAllSalaries, getSalary, getSalaryByEmplo
 const salaryRouter = express.Router()
 
 salaryRouter.post('/create-salary', authMiddleware, createSalary)
-salaryRouter.get('/',getAllSalaries)
+salaryRouter.get('/', authMiddleware,getAllSalaries)
 salaryRouter.get("/:id", getSalary)
 salaryRouter.put('/update-salary/:id', authMiddleware, updateSalary)
 salaryRouter.put('/update-status/:id', authMiddleware, updateStatus)

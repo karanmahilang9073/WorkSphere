@@ -43,7 +43,7 @@ export const login = asyncHandler(async(req,res) => {
     const emailNormalized = email.toLowerCase()
     const user = await User.findOne({email : emailNormalized}).select("+password")
     if(!user){
-        const error = new Error('user not found')
+        const error = new Error('user not found, make sure signup first')
         error.statusCode = 404
         throw error
     }

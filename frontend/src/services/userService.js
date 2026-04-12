@@ -9,7 +9,7 @@ const errorHandler = (error) => {
 export const getUsers = async() => {
     try {
         const res = await axiosClient.get('/users')
-        return res.data
+        return res.data.users
     } catch (error) {
         errorHandler(error)
     }

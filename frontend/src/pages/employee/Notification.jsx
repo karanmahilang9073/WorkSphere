@@ -24,13 +24,11 @@ function Notification() {
         fetch()
     },[])
 
-    const handleUpdate = async() => {
-        const res = await getMyNotifications()
-        setNotification(res.data)
+    const handleUpdate = (updateNotification) => {
+        setNotification(prev => prev.map(n => n._id === updateNotification._id ? updateNotification : n))
     }
-    const handleDelete = async() => {
-         const res = await getMyNotifications()
-        setNotification(res.data)
+    const handleDelete = (deleteId) => {
+        setNotification(prev => prev.filter((n => n._id !== deleteId)))
     }
 
   return (

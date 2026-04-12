@@ -1,8 +1,8 @@
 import { useContext } from 'react'
 import { AuthContext } from '../../context/AuthContext'
-import { useNavigate, NavLink } from 'react-router-dom'
+import { useNavigate, NavLink, Outlet } from 'react-router-dom'
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   const {  logout } = useContext(AuthContext)
   const navigate = useNavigate()
 
@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
         
         {/* Content */}
         <div className="p-6">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>

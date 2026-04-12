@@ -85,9 +85,6 @@ function Login() {
           </p>
         </form>
       </div>
-
-
-
     </div>
     </div>
   )

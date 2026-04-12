@@ -18,6 +18,7 @@ function MyTasks() {
             } catch (error) {
                 console.error('error while fetching task', error)
                 toast.error('failed to fetch tasks')
+                setError('failed to fetch tasks')
             } finally {
                 setLoading(false)
             }
@@ -26,13 +27,24 @@ function MyTasks() {
     },[])
 
     const handleDelete = async(id) => {
-        await deleteTask(id)
-        setTasks((prev) => prev.filter((t) => t._id !== id))
+        try {
+          await deleteTask(id)
+          setTasks(prev => prev.filter(t => t._id !== id))
+        } catch (error) {
+          console.error('failed to delete task', error)
+          toast.error('failed to delete task')
+        }
     }
 
     const handleComplete  = async(id) => {
-        const update = await updateStatus(id, "completed")
-        setTasks((prev) => prev.map((t) => (t._id === id ? update : t)))
+        try {
+          const update = await updateStatus(id, "completed")
+          setTasks(prev => prev.map(t => t._id === id ? update : t))
+          toast.success('task completed')
+        } catch (error) {
+          console.error('failed to complete task', error)
+          toast.error('failed to complete task')
+        }
     }
 
   return (
@@ -52,12 +64,12 @@ function MyTasks() {
         )}
 
         {/* emply */}
-        {!loading && tasks.length === 0 && (
+        {!loading && !error && tasks.length === 0 && (
           <div className="text-center text-gray-500 py-10">No tasks assigned</div>
         )}
 
         {/* task grid */}
-        {!loading && tasks.length > 0 && (
+        {!loading && !error && tasks.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tasks.map((task) => (
               <TaskCard key={task._id} task={task} onDelete={handleDelete} onComplete={handleComplete} />

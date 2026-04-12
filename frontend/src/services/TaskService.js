@@ -30,7 +30,7 @@ export const getTaskById = async(id) => {
 //create task
 export const createTask = async(taskData) => {
     try {
-        const res = await axiosClient.post('/tasks', taskData)
+        const res = await axiosClient.post('/tasks/create-task', taskData)
         return res.data.task
     } catch (error) {
         errorHandler(error)
@@ -50,7 +50,7 @@ export const updateTask = async(id, updatedData) => {
 //update status
 export const updateStatus = async(id, status) => {
     try {
-        const res = await axiosClient.patch(`/tasks/${id}/status`, {status})
+        const res = await axiosClient.put(`/tasks/update-status/${id}/status`, {status})
         return res.data.data
     } catch (error) {
         errorHandler(error)
@@ -60,7 +60,7 @@ export const updateStatus = async(id, status) => {
 //delete task 
 export const deleteTask = async(id) => {
     try {
-        await axiosClient.delete(`/tasks/${id}`)
+        await axiosClient.delete(`/tasks/delete-task/${id}`)
         return id
     } catch (error) {
         errorHandler(error)

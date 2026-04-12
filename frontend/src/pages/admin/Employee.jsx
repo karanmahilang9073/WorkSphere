@@ -34,7 +34,7 @@ function Employee() {
         const id = selectedEmployee._id
         try {
             const res = await updateUser(id, data)
-            setEmployees(employees => employees.map(e => e._id === id ? res : e))
+            setEmployees(employees => employees.map(e => e._id === id ? res.user : e))
             setShowModal(false)
             toast.success('user updated successfully')
         } catch (error) {

@@ -6,6 +6,8 @@ import AuthLayout from './components/layout/AuthLayout'
 import EmployeeLayout from './components/layout/EmployeeLayout'
 import AdminLayout from './components/layout/Adminlayout'
 import { Navigate } from 'react-router-dom'
+import Unauthorized from './pages/auth/Unauthorized'
+import { useAuth } from './context/AuthContext'
 
 // Employee pages
 import EmployeeDash from './pages/employee/Dashboard'
@@ -26,15 +28,23 @@ import Compensations from './pages/admin/Compensation'
 import Analytics from './pages/admin/Analytics'
 
 
+
 export default function App() {
+
+  const {user, loading} = useAuth()
+
+  if(loading) return <div className="">loading...</div>
+
   return (
     <Routes>
 
       {/* Auth Routes */}
       <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
       <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
       
+      <Route path="/" element={user ? user.role === "Admin" ? <Navigate to="/admin" /> : <Navigate to="/employee" /> : <Navigate to="/login" />}/>
 
       {/* Employee Routes */}
       <Route element={<ProtectedRoutes role="Employee"><EmployeeLayout /></ProtectedRoutes>}>
@@ -58,7 +68,6 @@ export default function App() {
           <Route path="/admin/analytics" element={<Analytics />} />
       </Route>
 
-      <Route path='/' element={<Navigate to='/login' />} />
 
     </Routes>
   )

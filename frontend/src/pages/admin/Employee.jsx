@@ -1,11 +1,16 @@
 import {useState, useEffect} from 'react'
 import { getUsers, updateUser, deleteUser } from '../../services/userService'
 import { toast } from 'react-toastify'
+import EditemployeeModal from '../../components/common/EditemployeeModal'
+
 
 function Employee() {
     const [employees, setEmployees] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+
+    const [showModal, setShowModal] =  useState(false)
+    const [selectedEmployee, setSelectedEmployee] = useState(null)
 
     useEffect(() => {
         const fetchData = async() => {
@@ -24,11 +29,14 @@ function Employee() {
         fetchData()
     }, [])
 
-    const handleEdit = async(id, data) => {
+    const handleEdit = async( data) => {
         setError(null)
+        const id = selectedEmployee._id
         try {
             const res = await updateUser(id, data)
             setEmployees(employees => employees.map(e => e._id === id ? res : e))
+            setShowModal(false)
+            toast.success('user updated successfully')
         } catch (error) {
             console.error('error while updating user', error)
             toast.error('failed to update user')
@@ -97,22 +105,22 @@ function Employee() {
                             
                             {/* actions */}
                             <td className='p-3 border-b text-center space-x-2'>
-                                <button onClick={() => handleEdit(emp._id, emp)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
+                                <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
                                     edit
                                 </button>
-                                <button onClick={() => handleDelete(emp._id)} className='px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-700'>
+                                <button onClick={() => {handleDelete(emp._id)}} className='px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-700'>
                                     Remove
                                 </button>
                             </td>
                         </tr>
                        ))}
                     </tbody>
-
                 </table>
+                
             </div>
         )}
         
-      
+      <EditemployeeModal show={showModal} onClose={() => setShowModal(false)} employee={selectedEmployee} onSave={handleEdit} />
     </div>
   )
 }

@@ -118,7 +118,7 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
 })
 
 export const getAllAttendance = asyncHandler(async(req, res) => {
-    if ( req.user.role !== 'employee') {
+    if (!["Admin","Hr"].includes(req.user.role)) {
         const error = new Error('Not authorized')
         error.statusCode = 403
         throw error

@@ -14,7 +14,7 @@ export const getUsers = asyncHandler(async(req, res) => {
 
 // get single user profile
 export const getUserProfile = asyncHandler(async(req, res) =>{
-    const userId = req.user.id 
+    const userId = req.user._id 
     const user = await User.findById(userId).select("-password")
     if (!user) {
         const error = new Error('user not found')
@@ -36,7 +36,7 @@ export const updateUser = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if (req.user.id !== user._id.toString() && req.user.role !== "Admin") {
+    if (req.user._id.toString() !== user._id.toString() && req.user.role !== "Admin") {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

@@ -18,8 +18,8 @@ export const checkIn = asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
-
-    const userId = req.user._id || req.user.id
+    
+    const userId = req.user._id
 
     const start =  getToday()
     const end = new Date(start)
@@ -63,7 +63,8 @@ export const checkout= asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
-    const userId = req.user._id || req.user.id
+   
+    const userId = req.user._id
 
     const start = getToday()
     const end = new Date(start)
@@ -121,7 +122,7 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     const end = new Date(year, month, 0)
     end.setHours(23, 59, 59, 999)
 
-    const userId  = req.user._id || req.user.id
+   const userId  = req.user._id
     const records = await Attendance.find({employee: userId, date: { $gte: start, $lt: end}}).sort({ date: 1 })
     res.status(200).json({ success: true, message: 'attendance record retrieved', count : records.length, records})
 })

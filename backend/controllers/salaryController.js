@@ -44,7 +44,7 @@ export const getAllSalaries = asyncHandler(async(req, res) => {
         if(req.query.status) filters.status = req.query.status 
         if(req.query.employee) filters.employee = req.query.emoloyee 
     } else {
-        filters.employee = req.user.id
+        filters.employee = req.user._id
     }
 
     const salaries = await Salary.find(filters).populate("employee", "name email").sort({month : -1})
@@ -62,7 +62,7 @@ export const getSalary = asyncHandler(async(req,res) => {
         throw error
     }
 
-    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user.id) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user._id.toString()) {
         const error = new Error('not Authorized')
         error.statusCode = 403
         throw error
@@ -147,7 +147,7 @@ export const getSalaryByEmployee = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && req.user.id !== employeeId) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && req.user._id.toString() !== employeeId) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

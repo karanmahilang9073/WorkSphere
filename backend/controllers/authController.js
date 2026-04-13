@@ -68,7 +68,7 @@ export const login = asyncHandler(async(req,res) => {
 })
 
 export const getProfile = asyncHandler(async(req, res) => {
-    const userId = req.user.id
+    const userId = req.user._id
     const user = await User.findById(userId).select("-password")
     if(!user){
         const error = new Error("user not found")

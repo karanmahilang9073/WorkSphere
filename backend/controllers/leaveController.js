@@ -3,7 +3,8 @@ import Leave from "../models/Leave.js";
 
 export const applyLeave = asyncHandler(async(req, res) => {
     const {leaveType, startDate, endDate, reason } = req.body
-    const employeeId = req.user.id
+    
+    const employeeId = req.user._id
     if( !leaveType || !startDate || !endDate || !reason){
         const error = new Error("All Fields are required")
         error.statusCode = 400
@@ -45,7 +46,7 @@ export const applyLeave = asyncHandler(async(req, res) => {
 
 export const getLeaves = asyncHandler(async (req, res) => {
     let leaves
-    const employeeId = req.user.id 
+    const employeeId = req.user._id 
     if(req.user.role === "Employee") {
         leaves = await Leave.find({employee : employeeId}).populate("employee", "name email role").sort({createdAt : -1})
     } else {
@@ -80,7 +81,8 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
     }
 
     leave.status = status
-    leave.approvedBy = req.user.id
+    
+    leave.approvedBy = req.user._id
     leave.approvedComment = comment
 
     await leave.save()
@@ -96,7 +98,8 @@ export const revokeLeave = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if (leave.employee.toString() !== req.user.id) {
+    
+    if (leave.employee.toString() !== req.user._id.toString()) {
         const error = new Error("not authorized")
         error.statusCode = 403
         throw error
@@ -120,7 +123,8 @@ export const deleteLeave = asyncHandler(async(req, res) => {
         error.statusCode= 404
         throw error
     }
-    if(leave.employee.toString() !== req.user.id && !['Hr','Admin'].includes(req.user.role)) {
+    
+    if(leave.employee.toString() !== req.user._id.toString() && !['Hr','Admin'].includes(req.user.role)) {
         const error = new Error('you are not authorized to delete leave')
         error.statusCode = 403
         throw error

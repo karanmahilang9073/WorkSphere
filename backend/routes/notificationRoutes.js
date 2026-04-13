@@ -4,10 +4,10 @@ import {createNotification, getMyNotifications, markAsRead ,markAllAsRead, delet
 
 const notificationRouter = express.Router()
 
-notificationRouter.post('/create-notification', authMiddleware, createNotification)
-notificationRouter.get('/', authMiddleware, getMyNotifications)
-notificationRouter.put('/:id/read', authMiddleware, markAsRead)
+notificationRouter.post('/', authMiddleware, createNotification)
+notificationRouter.get('/my', authMiddleware, getMyNotifications)
+notificationRouter.patch('/:id/read', authMiddleware, markAsRead)
 notificationRouter.put('/read-all', authMiddleware, markAllAsRead)
-notificationRouter.delete('/delete-notification/:id', authMiddleware, deleteNotification)
+notificationRouter.delete('/:id', authMiddleware, deleteNotification)
 
 export default notificationRouter

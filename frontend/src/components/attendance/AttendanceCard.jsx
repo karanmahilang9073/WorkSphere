@@ -35,11 +35,11 @@ function AttendanceCard({ attendance }) {
       <div className='grid grid-cols-2 gap-3'>
         <div className='bg-gray-50 p-3 rounded'>
           <p className='text-xs text-gray-500 mb-1'>Check-in</p>
-          <p className='font-semibold text-sm'>{formatTime(attendance.checkInTime)}</p>
+          <p className='font-semibold text-sm'>{formatTime(attendance.checkIn)}</p>
         </div>
         <div className='bg-gray-50 p-3 rounded'>
           <p className='text-xs text-gray-500 mb-1'>Check-out</p>
-          <p className='font-semibold text-sm'>{formatTime(attendance.checkOutTime)}</p>
+          <p className='font-semibold text-sm'>{formatTime(attendance.checkOut)}</p>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema({
     employee : {type : mongoose.Schema.Types.ObjectId, ref : "User", required : true},
-    date : {type : Date, default: new Date()},
+    date : {type : Date, default: Date.now},
     checkIn : Date,
     checkOut : Date,
     workHours : {type: Number, default: 0},
@@ -19,7 +19,7 @@ attendanceSchema.pre("save", function(next){
         const diff = this.checkOut - this.checkIn
         this.workHours = Math.round((diff / (1000 * 60 * 60)) * 100) / 100
     }
-    next()
+    
 })
 
 attendanceSchema.index({employee: 1, date: 1}, {unique: true})

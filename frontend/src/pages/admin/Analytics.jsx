@@ -26,11 +26,11 @@ function Analytics() {
                     getSalaries(),
                 ])
 
-                const user = userRes
-                const attendance = attendanceRes
-                const leave = leaveRes
-                const task = taskRes
-                const salary = salaryRes
+                const user = userRes || []
+                const attendance = attendanceRes || []
+                const leave = leaveRes || []
+                const task = taskRes || []
+                const salary = salaryRes ||[]
 
                 // calculation
                 // total employees

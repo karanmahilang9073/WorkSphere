@@ -9,7 +9,7 @@ const errorHandler = (error) => {
 export const getUsers = async() => {
     try {
         const res = await axiosClient.get('/users')
-        return res.data.users
+        return res.data
     } catch (error) {
         errorHandler(error)
     }
@@ -19,7 +19,7 @@ export const getUsers = async() => {
 export const getUserProfile = async() => {
     try {
         const res = await axiosClient.get('/users/profile')
-        return res.data
+        return res.data.user
     } catch (error) {
         errorHandler(error)
     }
@@ -29,7 +29,7 @@ export const getUserProfile = async() => {
 export const updateUser = async(id, data) => {
     try {
         const res = await axiosClient.put(`/users/${id}`, data)
-        return res.data
+        return res.data.user
     } catch (error) {
         errorHandler(error)
     }

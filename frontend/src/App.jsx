@@ -26,6 +26,7 @@ import Leave from './pages/admin/Leaves'
 import Tasks from './pages/admin/Tasks'
 import Compensations from './pages/admin/Compensation'
 import Analytics from './pages/admin/Analytics'
+import Profile from './pages/admin/Profile'
 
 
 
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/admin/tasks" element={<Tasks />} />
           <Route path="/admin/compensation" element={<Compensations />} />
           <Route path="/admin/analytics" element={<Analytics />} />
+          <Route path='/admin/profile' element={<Profile/>} />
       </Route>
 
 

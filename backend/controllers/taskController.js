@@ -92,7 +92,7 @@ export const updateTask = asyncHandler(async(req, res) => {
         ...(description && {description}),
         ...(deadline && {deadline : new Date(deadline)}),
     }
-    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {new : true, runValidators : true}).populate("assignedTo", "name email")
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email")
     res.status(200).json({success : true, message : "task updated successfully", data : updatedTask})
 })
 
@@ -124,7 +124,7 @@ export const updateStatus = asyncHandler(async(req, res) => {
         throw error
     }
 
-    const updatedStatus = await Task.findByIdAndUpdate(taskId, {status}, {new : true, runValidators : true}).populate("assignedTo", "name email")
+    const updatedStatus = await Task.findByIdAndUpdate(taskId, {status}, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email")
 
     await Notification.create({
         recipient : updatedStatus.assignedTo,

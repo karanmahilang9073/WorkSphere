@@ -41,7 +41,7 @@ export const markAsRead = asyncHandler(async(req, res) => {
     const notification = await Notification.findByIdAndUpdate(
         { _id : notificationId, recipient : req.user._id}, 
         {isRead : true}, 
-        {new : true})
+        {returnDocument : 'after'})
     if (!notification) {
         const error = new Error('notification not found or not authorized')
         error.statusCode = 404

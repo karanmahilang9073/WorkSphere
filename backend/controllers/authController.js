@@ -26,7 +26,7 @@ export const register = asyncHandler(async (req, res, next) => {
     const user = await User.create({name, email : emailNormalized, password : hashedPassword, role, department})
 
     try {
-        await welcomeMail({name : user.name, email : user.email})
+        await welcomeMail({name : user.name, email : user.email, role : user.role})
     } catch (error) {
         console.log('failed to send welcome mail')
     }

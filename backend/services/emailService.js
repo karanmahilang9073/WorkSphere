@@ -2,14 +2,14 @@ import { getTransporter } from "../config/email.js";
 import { leaveApprovedTemplate, leaveRejectedTemplate, payslipPublishedTemplate, taskAssignedTemplate, welcomeTemplate } from "../utils/emailTemplate.js";
 
 
-export const welcomeMail = async({name, email}) => {
+export const welcomeMail = async({name, email, role}) => {
     const transporter = getTransporter()
     try {
         return await transporter.sendMail({
             from : process.env.EMAIL_USER,
             to : email,
             subject : `welcome ${name} 🎉`,
-            html : welcomeTemplate({name, email})
+            html : welcomeTemplate({name, email, role})
         })
     } catch (error) {
         console.log('email error', error.message)

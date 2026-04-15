@@ -2,6 +2,7 @@ import asyncHandler from "../middlewares/asyncHandler.js";
 import Task from "../models/Task.js";
 import User from "../models/User.js";
 import Notification from "../models/Notification.js";
+import { taskAssignMail } from "../services/emailService.js";
 
 
 export const createTask = asyncHandler(async(req, res) => {
@@ -34,6 +35,12 @@ export const createTask = asyncHandler(async(req, res) => {
         title : 'new task assigned',
         message : `new task assigned: ${title}`
     })
+
+    try {
+        await taskAssignMail({user,  task})
+    } catch (error) {
+        console.log('task email failed', error)
+    }
 
     res.status(201).json({success : true, message : "task created successfully", task})
 })

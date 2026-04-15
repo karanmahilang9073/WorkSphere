@@ -1,6 +1,7 @@
 import asyncHandler from "../middlewares/asyncHandler.js"
 import User from "../models/User.js"
 
+
 // get users
 export const getUsers = asyncHandler(async(req, res) => {
     if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {

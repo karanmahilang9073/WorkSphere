@@ -1,5 +1,7 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Leave from "../models/Leave.js";
+import { leaveApprovedMail, leaveRejectedMail } from "../services/emailService.js";
+
 
 export const applyLeave = asyncHandler(async(req, res) => {
     const {leaveType, startDate, endDate, reason } = req.body
@@ -41,6 +43,20 @@ export const applyLeave = asyncHandler(async(req, res) => {
         endDate : end,
         reason
     })
+
+    await leave.save()
+    await leave.populate('employee', "name email")
+
+    try {
+        if(status === 'approved'){
+            await leaveApprovedMail({user: leave.employee, leave})
+        } else if(status === 'rejected'){
+            await leaveRejectedMail({user : leave.employee, leave})
+        }
+    } catch (error) {
+        console.log('leave email failed', error)
+    }
+
     res.status(201).json({success: true, message: 'leave applied successfully', leave})
 })
 

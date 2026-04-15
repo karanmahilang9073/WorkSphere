@@ -1,6 +1,8 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Salary from "../models/Salary.js";
 import User from "../models/User.js";
+import { payPublishedMail } from "../services/emailService.js";
+
 
 export const createSalary =  asyncHandler(async(req, res) => {
     const {employee, baseSalary, allowance, deduction, month} = req.body 
@@ -33,6 +35,14 @@ export const createSalary =  asyncHandler(async(req, res) => {
     
     const salary = await Salary.create({employee, baseSalary, allowance, deduction, month : monthDate})
     await salary.populate("employee", "name email")
+
+    try {
+        if(status === 'paid'){
+            await payPublishedMail({user : salary.employee, payslip : salary})
+        }
+    } catch (error) {
+        console.log('payslip email failed:', error)
+    }
     
     res.status(201).json({success : true, message : 'salary created successfully', data : salary})
 })

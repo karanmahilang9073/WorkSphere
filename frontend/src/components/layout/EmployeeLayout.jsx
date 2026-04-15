@@ -33,7 +33,10 @@ export default function EmployeeLayout() {
         {/* Navbar */}
         <nav className="bg-white shadow p-4 flex justify-between items-center">
           <h1 className="text-xl font-semibold">Welcome, {user?.name}</h1>
-          <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/employee/profile')} className='text-gray-700 hover:text-indigo-600 '>Profile</button>
+            <button onClick={handleLogout} className='bg-red-500 text-white px-4 py-2 rounded'>Logout</button>
+          </div>
         </nav>
         
         {/* Content */}

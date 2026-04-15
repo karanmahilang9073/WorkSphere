@@ -17,6 +17,7 @@ import MySalary from './pages/employee/MySalary'
 import MyTasks from './pages/employee/MyTasks'
 import Notification from './pages/employee/Notification'
 import Helpdesk from './pages/employee/Helpdesk'
+import Myprofile from './pages/employee/Myprofile'
 
 // Admin pages
 import Dashboard from './pages/admin/Dashboard'
@@ -27,6 +28,7 @@ import Tasks from './pages/admin/Tasks'
 import Compensations from './pages/admin/Compensation'
 import Analytics from './pages/admin/Analytics'
 import Profile from './pages/admin/Profile'
+
 
 
 
@@ -56,6 +58,7 @@ export default function App() {
           <Route path="/employee/my-tasks" element={<MyTasks />} />
           <Route path="/employee/notifications" element={<Notification />} />
           <Route path="/employee/helpdesk" element={<Helpdesk />} />
+          <Route path='/employee/profile' element={<Myprofile/>} />
       </Route>
 
       {/* Admin Routes */}

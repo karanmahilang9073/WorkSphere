@@ -11,6 +11,10 @@ function Employee() {
 
     const [showModal, setShowModal] =  useState(false)
     const [selectedEmployee, setSelectedEmployee] = useState(null)
+    const [searchEmp, setSearchEmp] = useState('')
+    const [viewModal, setViewModal] = useState(false)
+
+    const filterEmp = employees.filter(emp => emp.name.toLowerCase().includes(searchEmp.toLowerCase()) || emp.email.toLowerCase().includes(searchEmp.toLowerCase()))
 
     useEffect(() => {
         const fetchData = async() => {
@@ -55,6 +59,10 @@ function Employee() {
         } 
     }
 
+    const handleView = (emp) => {
+        setSelectedEmployee(emp)
+        setViewModal(true)
+    }
 
   return (
     <div className='p-4 bg-white shadow rounded-lg'>
@@ -79,6 +87,9 @@ function Employee() {
             <div className="text-gray-500 text-center py-4">no employee records found</div>
         )}
 
+        {/* searchbar */}
+        <input type="text" placeholder='search by name or email' value={searchEmp} onChange={(e) => setSearchEmp(e.target.value)} className='w-full border p-2 mb-4' />
+
         {/* table */}
         {!loading && !error && employees.length > 0 && (
             <div className="overflow-x-auto">
@@ -96,22 +107,19 @@ function Employee() {
                     
                     {/* table body */}
                     <tbody>
-                       {employees.map((emp) => (
+                       {filterEmp.map((emp) => (
                         <tr key={emp._id} className='hover:bg-gray-100'>
                             <td className='p-3 border-b'>{emp.name}</td>
                             <td className='p-3 border-b'>{emp.email}</td>
                             <td className='p-3 border-b'>{emp.department}</td>
                             <td className='p-3 border-b'>{emp.role}</td>
-                            
-                            {/* actions */}
-                            <td className='p-3 border-b text-center space-x-2'>
-                                <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
-                                    edit
-                                </button>
-                                <button onClick={() => {handleDelete(emp._id)}} className='px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-700'>
-                                    Remove
-                                </button>
+                            <td className="p-3 border-b">
+                                <button onClick={() => handleView(emp)} className='bg-blue-500 text-white px-2 py-1 rounded mr-2 text-sm'>View</button>
+                                <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='bg-yellow-500 text-white px-2 py-1 rounded text-sm mr-2'>edit</button>
+                                <button onClick={() => handleDelete(emp._id)} className='bg-red-500 text-white px-2 py-1 rounded text-sm'>Delete</button>
                             </td>
+                            
+                            
                         </tr>
                        ))}
                     </tbody>
@@ -119,8 +127,35 @@ function Employee() {
                 
             </div>
         )}
+
+        {viewModal && selectedEmployee && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg max-w-md w-full shadow-lg">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">{selectedEmployee.name}</h3>
+            
+            <div className="space-y-4 mb-6">
+                <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.email}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-600">Department</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.department}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-600">Role</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.role}</p>
+                </div>
+            </div>
+            
+            <button onClick={() => setViewModal(false)} className="w-full bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Close</button>
+        </div>
+    </div>
+        )}
         
       <EditemployeeModal show={showModal} onClose={() => setShowModal(false)} employee={selectedEmployee} onSave={handleEdit} />
+
+        
     </div>
   )
 }

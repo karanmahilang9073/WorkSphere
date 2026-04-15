@@ -2,12 +2,16 @@ import React, {useState, useEffect} from 'react'
 import { getSalaries, updateSalary, deleteSalary } from '../../services/SalaryService'
 import SalaryCard from '../../components/salary/SalaryCard'
 import {toast} from 'react-toastify'
+import SalaryModal from '../../components/salary/SalaryModal'
+
 
 
 function Compensation() {
     const [salaries, setSalaries] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+
+    const [showModal, setShowModal] = useState(false)
 
     useEffect(() => {
         const fetch = async() => {
@@ -60,6 +64,9 @@ function Compensation() {
         {/* header */}
         <h2 className="text-xl font-semibold mb-4">Salary records</h2>
 
+        {/* create salary button */}
+        <button onClick={() => setShowModal(true)} className='bg-green-500 text-white px-4 py-2 rounded mb-4'>Create salary</button>
+
         {/* loading */}
         {loading && (
             <div className="flex justify-center py-6">
@@ -80,7 +87,6 @@ function Compensation() {
         {/* salary grid */}
         {!loading && !error && salaries.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-
                 {salaries.map((salary) => (
                     <div key={salary._id} className='flex flex-col gap-2'>
                         <SalaryCard salary={salary} />
@@ -90,10 +96,11 @@ function Compensation() {
                         </div>
                     </div>
                 ))}
-                    
             </div>
         )}
       
+      {/* salary modal */}
+      {showModal && <SalaryModal onClose={() => setShowModal(false)} />}
     </div>
   )
 }

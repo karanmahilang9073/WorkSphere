@@ -8,7 +8,7 @@ const errorHandler = (error) => {
 //create saalry
 export const createSalary = async(data) => {
     try {
-        const res = await axiosClient.post('/salary', data)
+        const res = await axiosClient.post('/salary/create-salary', data)
         return res.data
     } catch (error) {
         errorHandler(error)

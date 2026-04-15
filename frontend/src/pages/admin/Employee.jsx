@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react'
 import { getUsers, updateUser, deleteUser } from '../../services/userService'
 import { toast } from 'react-toastify'
 import EditemployeeModal from '../../components/common/EditemployeeModal'
+import { useNavigate } from 'react-router-dom'
 
 
 function Employee() {
@@ -13,6 +14,8 @@ function Employee() {
     const [selectedEmployee, setSelectedEmployee] = useState(null)
     const [searchEmp, setSearchEmp] = useState('')
     const [viewModal, setViewModal] = useState(false)
+
+    const navigate = useNavigate()
 
     const filterEmp = employees.filter(emp => emp.name.toLowerCase().includes(searchEmp.toLowerCase()) || emp.email.toLowerCase().includes(searchEmp.toLowerCase()))
 
@@ -117,9 +120,10 @@ function Employee() {
                                 <button onClick={() => handleView(emp)} className='bg-blue-500 text-white px-2 py-1 rounded mr-2 text-sm'>View</button>
                                 <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='bg-yellow-500 text-white px-2 py-1 rounded text-sm mr-2'>edit</button>
                                 <button onClick={() => handleDelete(emp._id)} className='bg-red-500 text-white px-2 py-1 rounded text-sm'>Delete</button>
+                                <button onClick={() => navigate(`/admin/employee-analytics/${emp._id}`)} className='bg-purple-500 text-white px-2 py-1 rounded mr-2 text-sm'>view analytics</button>
                             </td>
                             
-                            
+
                         </tr>
                        ))}
                     </tbody>

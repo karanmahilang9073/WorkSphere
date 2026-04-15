@@ -18,7 +18,7 @@ function Analytics() {
             try {
                 setLoading(true)
                 setError(null)
-                const [userRes, attendanceRes, leaveRes, taskRes, salaryRes] = await Promise.all([
+                const [userRes, taskRes, leaveRes, attendanceRes, salaryRes] = await Promise.all([
                     getUsers(),
                     getTasks(),
                     getLeaves(),

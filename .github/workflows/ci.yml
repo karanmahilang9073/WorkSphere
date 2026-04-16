@@ -37,6 +37,11 @@ jobs:
           cd frontend
           npm install
 
+      - name: Fix Vite CI issue
+        run: |
+          cd frontend
+          npm install vite@latest
+
       - name: Build Frontend
         run: |
           cd frontend

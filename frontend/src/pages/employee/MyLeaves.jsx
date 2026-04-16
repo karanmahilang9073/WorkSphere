@@ -37,6 +37,9 @@ function MyLeaves() {
             </div>
         )}
 
+        {!loading && leaves.length === 0 && (
+            <p className="text-center text-gray-500">No leave requests found</p>
+        )}
 
         {/* leave grid */}
         {leaves.length > 0 ? (
@@ -46,7 +49,7 @@ function MyLeaves() {
                 ))}
             </div>
         ) : (
-            <p className="text-center text-gray-500">No leave request found.</p>
+            <p className="text-center text-gray-500">No leave requests found.</p>
         )}
 
         {/* toggle leave form button */}

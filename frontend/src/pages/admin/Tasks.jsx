@@ -36,11 +36,16 @@ function Tasks() {
 
     //get users
     useEffect(() => {
-      const users = async() => {
-        const res = await getUsers()
-        setUser(res)
+      const fetchUsers = async() => {
+        try {
+          const res = await getUsers()
+          setUser(res)
+        } catch (error) {
+          console.error('failed to fetch users', error)
+          toast.error('failed to fetch users')
+        }
       }
-      users()
+      fetchUsers()
     }, [])
 
     //form change
@@ -55,7 +60,7 @@ function Tasks() {
         const newTask = await createTask(form)
         setTasks((prev) => [newTask, ...prev])
         toast.success('new task created successfully')
-        setForm({title : '', description : '', deadline : '', priority : ''})
+        setForm({title : '', description : '', deadline : '', priority : 'low', assignedTo : ''})
         setShowForm(false)
       } catch (error) {
         toast.error(error.response?.data?.message || 'failed to create task')
@@ -170,7 +175,6 @@ function Tasks() {
           </div>
         </div>
       )}
-
     </div>
   )
 }

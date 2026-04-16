@@ -3,10 +3,12 @@ import { deleteNotification, markAsRead } from '../../services/NotificationServi
 
 function NotificationCard({notification, onUpdate, onDelete}) {
 
+  if(!notification) return null;
+
   const handleMarkasRead = async() => {
     try {
       const res = await markAsRead(notification._id)
-      onUpdate(res)
+      onUpdate && onUpdate(res)
     } catch (error) {
       console.error('failed to MarkAsRead the notification', error)
     }
@@ -15,7 +17,7 @@ function NotificationCard({notification, onUpdate, onDelete}) {
   const handleDelete = async() => {
     try {
       const res = await deleteNotification(notification._id)
-      onDelete(res)
+      onDelete && onDelete(res)
     } catch (error) {
       console.error('failed to delete notification', error)
     }
@@ -53,7 +55,7 @@ function NotificationCard({notification, onUpdate, onDelete}) {
         </div>
 
         {/* type badge */}
-        <span className={`px-2 py-1 text-xs rounded-full font-medium ${getTypeColor(notification.type)}`}>{notification.type}</span>
+        <span className={`px-2 py-1 text-xs rounded-full font-medium ${getTypeColor(notification.type)}`}>{notification.type?.toUpperCase()}</span>
       </div>
 
       {/* bottom */}
@@ -71,7 +73,7 @@ function NotificationCard({notification, onUpdate, onDelete}) {
           )}
 
           {/* delete */}
-          <button onClick={() => handleDelete()} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-700">Delete</button>
+          <button onClick={() => handleDelete()} className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-700 transition">Delete</button>
         </div>
       </div>
       

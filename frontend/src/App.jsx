@@ -5,6 +5,9 @@ import ProtectedRoutes from './components/common/ProtectedRoutes'
 import AuthLayout from './components/layout/AuthLayout'
 import EmployeeLayout from './components/layout/EmployeeLayout'
 import AdminLayout from './components/layout/Adminlayout'
+import { Navigate } from 'react-router-dom'
+import Unauthorized from './pages/auth/Unauthorized'
+import { useAuth } from './context/AuthContext'
 
 // Employee pages
 import EmployeeDash from './pages/employee/Dashboard'
@@ -14,6 +17,7 @@ import MySalary from './pages/employee/MySalary'
 import MyTasks from './pages/employee/MyTasks'
 import Notification from './pages/employee/Notification'
 import Helpdesk from './pages/employee/Helpdesk'
+import Myprofile from './pages/employee/Myprofile'
 
 // Admin pages
 import Dashboard from './pages/admin/Dashboard'
@@ -23,37 +27,52 @@ import Leave from './pages/admin/Leaves'
 import Tasks from './pages/admin/Tasks'
 import Compensations from './pages/admin/Compensation'
 import Analytics from './pages/admin/Analytics'
+import Profile from './pages/admin/Profile'
+import EmpAnalytics from './pages/admin/EmpAnalytics'
 
 
 export default function App() {
+
+  const {user, loading} = useAuth()
+
+  if(loading) return <div className="">loading...</div>
+
   return (
     <Routes>
 
       {/* Auth Routes */}
       <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
       <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
       
+      <Route path="/" element={user ? user.role === "Admin" ? <Navigate to="/admin" /> : <Navigate to="/employee" /> : <Navigate to="/login" />}/>
 
       {/* Employee Routes */}
-      <Route element={<ProtectedRoutes><EmployeeLayout><EmployeeDash /></EmployeeLayout></ProtectedRoutes>} path="/employee" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyAttendance /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-attendance" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyLeaves /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-leaves" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MySalary /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-salary" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><MyTasks /></EmployeeLayout></ProtectedRoutes>} path="/employee/my-tasks" />
-      <Route element={<ProtectedRoutes><EmployeeLayout><Notification/></EmployeeLayout></ProtectedRoutes>} path='/employee/notifications' />
-      <Route element={<ProtectedRoutes><EmployeeLayout><Helpdesk/></EmployeeLayout></ProtectedRoutes>} path='/employee/helpdesk' />
+      <Route element={<ProtectedRoutes role="Employee"><EmployeeLayout /></ProtectedRoutes>}>
+          <Route path="/employee" element={<EmployeeDash />} />
+          <Route path="/employee/my-attendance" element={<MyAttendance />} />
+          <Route path="/employee/my-leaves" element={<MyLeaves />} />
+          <Route path="/employee/my-salary" element={<MySalary />} />
+          <Route path="/employee/my-tasks" element={<MyTasks />} />
+          <Route path="/employee/notifications" element={<Notification />} />
+          <Route path="/employee/helpdesk" element={<Helpdesk />} />
+          <Route path='/employee/profile' element={<Myprofile/>} />
+      </Route>
 
       {/* Admin Routes */}
-      <Route element={<ProtectedRoutes><AdminLayout><Dashboard /></AdminLayout></ProtectedRoutes>} path="/admin" />
-      <Route element={<ProtectedRoutes><AdminLayout><Employees /></AdminLayout></ProtectedRoutes>} path="/admin/employees" />
-      <Route element={<ProtectedRoutes><AdminLayout><Attendance /></AdminLayout></ProtectedRoutes>} path="/admin/attendance" />
-      <Route element={<ProtectedRoutes><AdminLayout><Leave /></AdminLayout></ProtectedRoutes>} path="/admin/leaves" />
-      <Route element={<ProtectedRoutes><AdminLayout><Tasks /></AdminLayout></ProtectedRoutes>} path="/admin/tasks" />
-      <Route element={<ProtectedRoutes><AdminLayout><Compensations /></AdminLayout></ProtectedRoutes>} path="/admin/compensation" />
-      <Route element={<ProtectedRoutes><AdminLayout><Analytics /></AdminLayout></ProtectedRoutes>} path="/admin/analytics" />
+      <Route element={<ProtectedRoutes role="Admin"><AdminLayout /></ProtectedRoutes>}>
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/employees" element={<Employees />} />
+          <Route path="/admin/attendance" element={<Attendance />} />
+          <Route path="/admin/leaves" element={<Leave />} />
+          <Route path="/admin/tasks" element={<Tasks />} />
+          <Route path="/admin/compensation" element={<Compensations />} />
+          <Route path="/admin/analytics" element={<Analytics />} />
+          <Route path='/admin/profile' element={<Profile/>} />
+          <Route path='/admin/employee-analytics/:employeeId' element={<EmpAnalytics/>} />
+      </Route>
 
-      <Route path='/' element={<Login/>} />
 
     </Routes>
   )

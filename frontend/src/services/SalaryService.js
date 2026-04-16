@@ -8,7 +8,7 @@ const errorHandler = (error) => {
 //create saalry
 export const createSalary = async(data) => {
     try {
-        const res = await axiosClient.post('/salary', data)
+        const res = await axiosClient.post('/salary/create-salary', data)
         return res.data
     } catch (error) {
         errorHandler(error)
@@ -49,7 +49,7 @@ export const updateSalary = async(id, data) => {
 //update salary status
 export const updateStatus = async(id, status) => {
     try {
-        const res = await axiosClient.patch(`/salary/${id}/status`, {status})
+        const res = await axiosClient.put(`/salary/${id}/status`, {status})
         return res.data
     } catch (error) {
         errorHandler(error)

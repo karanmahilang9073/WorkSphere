@@ -1,6 +1,9 @@
 import React from 'react'
 
-function SalaryCard({salary}) {
+function SalaryCard({salary, onStatusUpdate}) {
+
+    if(!salary) return null;
+    
     const status = {
         paid : 'bg-green-100 text-green-700',
         pending : 'bg-yellow-100 text-yellow-700',
@@ -8,6 +11,9 @@ function SalaryCard({salary}) {
     }
 
     const formatMonth = (month) => {
+
+        if(!month) return 'invalid month'
+        
         return new Date(month).toLocaleDateString("default",{month : 'long', year : 'numeric'})
     }
 
@@ -17,7 +23,8 @@ function SalaryCard({salary}) {
         <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">{formatMonth(salary.month)}</h2>
 
-            <span className={`px-3 py-1 text-sm rounded-full font-medium ${status[salary.status] || 'bg-gray-100 text-gray-700'}`}>{salary.status}</span>
+            <span className={`px-3 py-1 text-sm rounded-full font-medium ${status[salary.status] || 'bg-gray-100 text-gray-700'}`}>{salary.status?.toUpperCase()}</span>
+
         </div>
 
         {/* net salary */}
@@ -38,6 +45,11 @@ function SalaryCard({salary}) {
                 <p className="font-medium text-red-600">{salary.deduction}</p>
             </div>
         </div>
+
+        {/* status update button */}
+            {salary.status !== 'paid' && (
+                <button onClick={() => onStatusUpdate(salary._id, salary.status)} className='mt-3 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600'>update status</button>
+            )}
     </div>
   )
 }

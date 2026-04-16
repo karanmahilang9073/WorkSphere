@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import AttendanceCard from '../../components/attendance/AttendanceCard'
-import { getMyAttendance } from '../../services/attendanceService'
-import {toast} from 'react-toastify'
-
+import { getMyAttendance, checkIn, checkOut } from '../../services/attendanceService'
+import { toast } from 'react-toastify'
 
 function MyAttendance() {
     const today = new Date()
@@ -12,16 +11,20 @@ function MyAttendance() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
+    const [todayAttendance, setTodayAttendance] = useState(null)
+
+    // ✅ Fetch monthly attendance
     useEffect(() => {
-        const fetchAttendance = async() => {
+        const fetchAttendance = async () => {
             setLoading(true)
             setError(null)
             try {
                 const data = await getMyAttendance(month, year)
                 setAttendance(data)
             } catch (error) {
-                console.error('error fetching attendance', error)
-                toast.error('failed to fetch attendance')
+                console.error(error)
+                toast.error('Failed to fetch attendance')
+                setError('Failed to fetch attendance')
             } finally {
                 setLoading(false)
             }
@@ -29,60 +32,128 @@ function MyAttendance() {
         fetchAttendance()
     }, [month, year])
 
+    // ✅ Always calculate todayAttendance from list
+    useEffect(() => {
+        const todayDate = new Date()
 
-  return (
-    <div className='p-6 space-y-6'>
-        {/* header */}
-        <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">My Attendance</h1>
+        const todayRecord = attendance.find(a => {
+            const d1 = new Date(a.date)
+            return (
+                d1.getDate() === todayDate.getDate() &&
+                d1.getMonth() === todayDate.getMonth() &&
+                d1.getFullYear() === todayDate.getFullYear()
+            )
+        })
 
-            {/* filter */}
-            <div className="flex gap-2">
-                <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className='border rounded px-3 py-2'>
-                    <option name="" id="">Select Month</option>
-                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => 
-                        <option value={m} key={m}>{m}</option>
-                    )}
-                </select>
+        setTodayAttendance(todayRecord || null)
+    }, [attendance])
 
-                <select value={year} onChange={(e) => setYear(Number(e.target.value))} className='border rounded px-3 py-2'>
-                    <option value="">Select year</option>
-                    {[2024,2025,2026,2027].map(y =>
-                        <option key={y} value={y}>{y}</option>
-                    )}
-                </select>
+    // ✅ Check if current month selected
+    const isCurrentMonth =
+        month === today.getMonth() + 1 &&
+        year === today.getFullYear()
+
+    // ✅ Check In
+    const handleCheckIn = async () => {
+        if (todayAttendance?.checkIn) {
+            toast.error("Already checked in today")
+            return
+        }
+
+        try {
+            const res = await checkIn()
+            toast.success('Check-in successful')
+            setTodayAttendance(res.attendance)
+            setAttendance(prev => [res.attendance, ...prev])
+            
+        } catch (error) {
+            toast.error(error?.message || 'Check-in failed')
+        } 
+    }
+
+    // ✅ Check Out
+    const handleCheckOut = async () => {
+        if (!todayAttendance) {
+            toast.error("Check-in not found")
+            return
+        }
+
+        try {
+            const res = await checkOut()
+            setTodayAttendance(res.attendance)
+            setAttendance(prev => prev.map(a => a._id === res.attendance._id ? res.attendance : a))
+            toast.success('Check-out successful')
+        } catch (error) {
+            toast.error(error?.message || 'Check-out failed')
+        } 
+    }
+
+    return (
+        <div className='p-6 space-y-6'>
+
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold">My Attendance</h1>
+
+                {/* Month filter */}
+                <div className="flex gap-2">
+                    <select value={month} onChange={(e) => setMonth(Number(e.target.value))}
+                        className='border rounded px-3 py-2'>
+                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(m =>
+                            <option key={m} value={m}>{m}</option>
+                        )}
+                    </select>
+
+                    <select value={year} onChange={(e) => setYear(Number(e.target.value))}
+                        className='border rounded px-3 py-2'>
+                        {[2024,2025,2026,2027].map(y =>
+                            <option key={y} value={y}>{y}</option>
+                        )}
+                    </select>
+                </div>
             </div>
-        </div>
 
-        {/* loading */}
-        {loading && (
-            <div className="flex justify-center items-center py-10">
-                <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-black rounded-full"></div>
-            </div>
-        )}
+            {/* ✅ Today's Attendance */}
+            {isCurrentMonth && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <h2 className="font-semibold mb-3">Today's attendance</h2>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleCheckIn}
+                            disabled={todayAttendance?.checkIn || loading}
+                            className="px-4 py-2 bg-green-500 text-white rounded disabled:bg-green-300">
+                            Check In
+                        </button>
 
-        {error && (
-            <div className="text-red-500 text-center py-6">{error}</div>
-        )}
+                        <button
+                            onClick={handleCheckOut}
+                            disabled={!todayAttendance?.checkIn || todayAttendance?.checkOut || loading}
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded disabled:bg-red-300">
+                            Check Out
+                        </button>
+                    </div>
+                </div>
+            )}
 
-        {/* empty condition */}
-        {!loading && !error && attendance.length === 0 && (
-            <div className="text-center text-gray-500 py-10">
-                No attendance records found for this period
-            </div>
-        )}
+            {/* Loading */}
+            {loading && <p className="text-center">Loading...</p>}
 
-        {/* grid */}
-        {!loading && !error && attendance.length > 0 && (
+            {/* Error */}
+            {error && <p className="text-red-500 text-center">{error}</p>}
+
+            {/* Empty */}
+            {!loading && attendance.length === 0 && (
+                <p className="text-center text-gray-500">No records found</p>
+            )}
+
+            {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {attendance.map((record, index) => (
-                    <AttendanceCard key={index} attendance={record} />
+                {attendance.map(a => (
+                    <AttendanceCard key={a._id} attendance={a} />
                 ))}
             </div>
-        )}
-      
-    </div>
-  )
+        </div>
+    )
 }
 
 export default MyAttendance

@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
             if(storedUser) {
                 setUser(JSON.parse(storedUser))
             }
-            setLoading(false)
         } catch (error) {
             console.error('invalid user data in localStorage', error)
             localStorage.removeItem('user')

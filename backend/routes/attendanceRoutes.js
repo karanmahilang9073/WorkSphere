@@ -7,7 +7,7 @@ const attendanceRouter = express.Router()
 attendanceRouter.post('/check-in', authMiddleware, checkIn)
 attendanceRouter.post('/check-out', authMiddleware, checkout)
 attendanceRouter.get('/my',authMiddleware, getMyAttendance)
-attendanceRouter.get('/', getAllAttendance)
+attendanceRouter.get('/', authMiddleware, getAllAttendance)
 attendanceRouter.post('/absent', authMiddleware, markAbsent)
 
 export default attendanceRouter

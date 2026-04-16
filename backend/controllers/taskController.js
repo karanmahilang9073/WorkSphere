@@ -1,6 +1,8 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Task from "../models/Task.js";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
+import { taskAssignMail } from "../services/emailService.js";
 
 
 export const createTask = asyncHandler(async(req, res) => {
@@ -18,7 +20,7 @@ export const createTask = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)){
         const error = new Error('not authorized to create task')
         error.statusCode = 403
         throw error
@@ -27,15 +29,28 @@ export const createTask = asyncHandler(async(req, res) => {
     const task = await Task.create({title, description, assignedTo, deadline})
     await task.populate("assignedTo", "name email")
 
+    await Notification.create({
+        recipient : assignedTo,
+        type : 'task',
+        title : 'new task assigned',
+        message : `new task assigned: ${title}`
+    })
+
+    try {
+        await taskAssignMail({user,  task})
+    } catch (error) {
+        console.log('task email failed', error)
+    }
+
     res.status(201).json({success : true, message : "task created successfully", task})
 })
 
 export const getAllTasks = asyncHandler(async(req, res) => {
     let tasks 
-    if(['Hr','Admin'].includes(req.user.role)){
+    if(['Hr','Admin','hr','admin'].includes(req.user.role)){
         tasks = await Task.find().populate("assignedTo", "name email").sort({createdAt : -1})
     } else {
-        tasks = await Task.find({assignedTo : req.user.id}).populate("assignedTo", "name email").sort({createdAt : -1})
+        tasks = await Task.find({assignedTo : req.user._id}).populate("assignedTo", "name email").sort({createdAt : -1})
     }
 
     res.status(200).json({success: true, message : 'all tasks fetched successfully', count : tasks.length, data : tasks})
@@ -49,7 +64,7 @@ export const getTask =  asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user._id.toString()){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -73,7 +88,7 @@ export const updateTask = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user._id.toString()) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -84,7 +99,7 @@ export const updateTask = asyncHandler(async(req, res) => {
         ...(description && {description}),
         ...(deadline && {deadline : new Date(deadline)}),
     }
-    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {new : true, runValidators : true}).populate("assignedTo", "name email")
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email")
     res.status(200).json({success : true, message : "task updated successfully", data : updatedTask})
 })
 
@@ -103,7 +118,7 @@ export const updateStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user._id.toString()){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -116,7 +131,15 @@ export const updateStatus = asyncHandler(async(req, res) => {
         throw error
     }
 
-    const updatedStatus = await Task.findByIdAndUpdate(taskId, {status}, {new : true, runValidators : true}).populate("assignedTo", "name email")
+    const updatedStatus = await Task.findByIdAndUpdate(taskId, {status}, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email")
+
+    await Notification.create({
+        recipient : updatedStatus.assignedTo,
+        type : 'task',
+        title : 'task status updated',
+        message : `your task status has been updated to: ${status}`
+    })
+    
     res.status(200).json({success : true, message : 'task status updated successfullt', data : updatedStatus})
 })
 
@@ -128,7 +151,7 @@ export const deleteTask = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id){
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && task.assignedTo.toString() !== req.user._id.toString()){
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

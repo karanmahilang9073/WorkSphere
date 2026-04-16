@@ -1,25 +1,30 @@
 import { useContext } from 'react'
 import { AuthContext } from '../../context/AuthContext'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate, NavLink, Outlet } from 'react-router-dom'
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
   const {  logout } = useContext(AuthContext)
   const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-4">
         <h2 className="text-2xl font-bold mb-8">AstraaHR Admin</h2>
-        <hr class="border-t border-gray-300 my-4" />
+        <hr className="border-t border-gray-300 my-4" />
         <nav className="space-y-4">
-          <Link to="/admin" className="block hover:bg-gray-700 p-2 rounded">Dashboard</Link>
-          <Link to="/admin/employees" className="block hover:bg-gray-700 p-2 rounded">Employees</Link>
-          <Link to="/admin/attendance" className="block hover:bg-gray-700 p-2 rounded">Attendance</Link>
-          <Link to="/admin/leaves" className="block hover:bg-gray-700 p-2 rounded">Leaves</Link>
-          <Link to="/admin/tasks" className="block hover:bg-gray-700 p-2 rounded">Tasks</Link>
-          <Link to="/admin/compensation" className="block hover:bg-gray-700 p-2 rounded">Compensation</Link>
-          <Link to="/admin/analytics" className="block hover:bg-gray-700 p-2 rounded">Analytics</Link>
+          <NavLink to="/admin" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Dashboard</NavLink>
+          <NavLink to="/admin/employees" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Employees</NavLink>
+          <NavLink to="/admin/attendance" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Attendance</NavLink>
+          <NavLink to="/admin/leaves" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Leaves</NavLink>
+          <NavLink to="/admin/tasks" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Tasks</NavLink>
+          <NavLink to="/admin/compensation" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Compensation</NavLink>
+          <NavLink to="/admin/analytics" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Analytics</NavLink>
         </nav>
       </aside>
 
@@ -28,12 +33,15 @@ export default function AdminLayout({ children }) {
         {/* Navbar */}
         <nav className="bg-white shadow p-4 flex justify-between items-center">
           <h1 className="text-xl font-semibold">Admin Panel</h1>
-          <button onClick={() => { logout(); navigate('/login'); }} className="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/admin/profile')} className='text-gray-700 hover:text-blue-600'>Profile</button>
+            <button onClick={handleLogout} className='bg-red-400 hover:bg-red-600 text-white px-4 py-2 rounded'>Logout</button>
+          </div>
         </nav>
         
         {/* Content */}
         <div className="p-6">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>

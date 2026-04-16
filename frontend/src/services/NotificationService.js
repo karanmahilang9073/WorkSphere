@@ -8,7 +8,7 @@ const errorHandler = (error) => {
 //create-notification
 export const createNotification = async(data) => {
     try {
-        const res = await axiosClient.post('/notifications/', data)
+        const res = await axiosClient.post('/notifications', data)
         return res.data
     } catch (error) {
         errorHandler(error)
@@ -19,7 +19,7 @@ export const createNotification = async(data) => {
 export const getMyNotifications = async() => {
     try {
         const res = await axiosClient.get('/notifications/my')
-        return res.data
+        return res.data.notifications
     } catch (error) {
         errorHandler(error)
     }
@@ -35,10 +35,21 @@ export const markAsRead = async(id) => {
     }
 }
 
+//mark all as read
+export const markAllAsRead = async() => {
+    try {
+        const res = await axiosClient.put('/notifications/read-all')
+        return res.data
+    } catch (error) {
+        errorHandler(error)
+    }
+}
+
 //delete notification
 export const deleteNotification = async(id) => {
     try {
-        await axiosClient.delete(`/notifications/${id}`)
+        const res = await axiosClient.delete(`/notifications/${id}`)
+        return res.data
     } catch (error) {
         errorHandler(error)
     }

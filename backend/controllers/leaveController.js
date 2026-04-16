@@ -1,9 +1,12 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Leave from "../models/Leave.js";
+import { leaveApprovedMail, leaveRejectedMail } from "../services/emailService.js";
+
 
 export const applyLeave = asyncHandler(async(req, res) => {
     const {leaveType, startDate, endDate, reason } = req.body
-    const employeeId = req.user.id
+    
+    const employeeId = req.user._id
     if( !leaveType || !startDate || !endDate || !reason){
         const error = new Error("All Fields are required")
         error.statusCode = 400
@@ -40,16 +43,30 @@ export const applyLeave = asyncHandler(async(req, res) => {
         endDate : end,
         reason
     })
+
+    await leave.save()
+    await leave.populate('employee', "name email")
+
+    try {
+        if(status === 'approved'){
+            await leaveApprovedMail({user: leave.employee, leave})
+        } else if(status === 'rejected'){
+            await leaveRejectedMail({user : leave.employee, leave})
+        }
+    } catch (error) {
+        console.log('leave email failed', error)
+    }
+
     res.status(201).json({success: true, message: 'leave applied successfully', leave})
 })
 
 export const getLeaves = asyncHandler(async (req, res) => {
     let leaves
-    const employeeId = req.user.id 
+    const employeeId = req.user._id 
     if(req.user.role === "Employee") {
         leaves = await Leave.find({employee : employeeId}).populate("employee", "name email role").sort({createdAt : -1})
     } else {
-        leaves = await Leave.Find().populate("employee", "name email role").sort({createdAt : -1})
+        leaves = await Leave.find().populate("employee", "name email role").sort({createdAt : -1})
     }
     res.status(200).json({success: true, count: leaves.length, leaves})
 })
@@ -63,7 +80,7 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('you are not authorized to update leave status')
         error.statusCode = 403
         throw error
@@ -80,7 +97,8 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
     }
 
     leave.status = status
-    leave.approvedBy = req.user.id
+    
+    leave.approvedBy = req.user._id
     leave.approvedComment = comment
 
     await leave.save()
@@ -96,7 +114,8 @@ export const revokeLeave = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if (leave.employee.toString() !== req.user.id) {
+    
+    if (leave.employee.toString() !== req.user._id.toString()) {
         const error = new Error("not authorized")
         error.statusCode = 403
         throw error
@@ -120,7 +139,8 @@ export const deleteLeave = asyncHandler(async(req, res) => {
         error.statusCode= 404
         throw error
     }
-    if(leave.employee.toString() !== req.user.id && !['Hr','Admin'].includes(req.user.role)) {
+    
+    if(leave.employee.toString() !== req.user._id.toString() && !['Hr','Admin'].includes(req.user.role)) {
         const error = new Error('you are not authorized to delete leave')
         error.statusCode = 403
         throw error

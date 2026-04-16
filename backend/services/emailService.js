@@ -1,14 +1,15 @@
 import { getTransporter } from "../config/email.js";
 import { leaveApprovedTemplate, leaveRejectedTemplate, payslipPublishedTemplate, taskAssignedTemplate, welcomeTemplate } from "../utils/emailTemplate.js";
 
-export const welcomeMail = async({name, email}) => {
+
+export const welcomeMail = async({name, email, role}) => {
     const transporter = getTransporter()
     try {
         return await transporter.sendMail({
             from : process.env.EMAIL_USER,
             to : email,
             subject : `welcome ${name} 🎉`,
-            html : welcomeTemplate({name, email})
+            html : welcomeTemplate({name, email, role})
         })
     } catch (error) {
         console.log('email error', error.message)
@@ -23,7 +24,7 @@ export const taskAssignMail = async({user, task}) => {
             from : process.env.EMAIL_USER,
             to : user.email,
             subject : `new task assigned: ${task.title} 📌`,
-            html : taskAssignedTemplate({user, task})
+            html : taskAssignedTemplate(user,  task)
         })
     } catch (error) {
         console.error('task email error', error.message)
@@ -38,7 +39,7 @@ export const leaveApprovedMail = async({user, leave}) => {
             from : process.env.EMAIL_USER,
             to : user.email,
             subject : 'your leave has been approved ✅',
-            html : leaveApprovedTemplate({user, leave})
+            html : leaveApprovedTemplate(user, leave)
         })
     } catch (error) {
         console.error('leave email error', error.message)
@@ -53,7 +54,7 @@ export const leaveRejectedMail = async({user, leave}) => {
             from : process.env.EMAIL_USER,
             to : user.email,
             subject : 'your leave request was rejected ❌',
-            html : leaveRejectedTemplate({user, leave})
+            html : leaveRejectedTemplate(user, leave)
         })
     } catch (error) {
         console.error('leave email error', error.message)
@@ -68,7 +69,7 @@ export const payPublishedMail = async({user, payslip}) => {
             from : process.env.EMAIL_USER,
             to : user.email,
             subject : `your payslip for ${payslip.month} is ready 💸`,
-            html : payslipPublishedTemplate({user, payslip})
+            html : payslipPublishedTemplate(user, payslip)
         })
     } catch (error) {
         console.error('payslip email error', error.message)

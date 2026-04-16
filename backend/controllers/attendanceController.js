@@ -2,9 +2,9 @@ import asyncHandler from "../middlewares/asyncHandler.js"
 import Attendance from "../models/Attendance.js"
 
 const getToday = () => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today
+    const start = new Date()
+    start.setHours(0, 0, 0, 0)
+    return start
 }
 
 const calculateHours = (checkIn, checkOut) => {
@@ -18,11 +18,14 @@ export const checkIn = asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
+    
+    const userId = req.user._id
 
-    const userId = req.user.id
-    const today = getToday()
+    const start =  getToday()
+    const end = new Date(start)
+    end.setDate(end.getDate() + 1)
 
-    const existing = await Attendance.findOne({ employee: userId, date: today})
+    const existing = await Attendance.findOne({employee : userId, date : {$gte : start, $lt : end}})
     if(existing) {
         const error = new Error('already checked in today')
         error.statusCode = 400
@@ -45,7 +48,7 @@ export const checkIn = asyncHandler(async(req, res) => {
     
     const attendance = await Attendance.create({
         employee: userId,
-        date: today,
+        date: start,
         checkIn: now,
         shiftStart : shift.start,
         shiftEnd : shift.end,
@@ -60,10 +63,14 @@ export const checkout= asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
-    const userId = req.user.id
-    const today = getToday()
+   
+    const userId = req.user._id
 
-    const attendance = await Attendance.findOne({employee: userId, date: today})
+    const start = getToday()
+    const end = new Date(start)
+    end.setDate(end.getDate() + 1)
+
+    const attendance = await Attendance.findOne({employee: userId, date: {$gte : start, $lt : end}})
     if (!attendance) {
         const error = new Error('check-in not found')
         error.statusCode = 404
@@ -111,14 +118,17 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     }
     // date range
     const start = new Date(year, month -1, 1)
+    start.setHours(0,0,0,0)
     const end = new Date(year, month, 0)
-    const userId  = req.user._id
-    const records = await Attendance.find({employee: userId, date: { $gte: start, $lte: end}}).sort({ date: 1 })
+    end.setHours(23, 59, 59, 999)
+
+   const userId  = req.user._id
+    const records = await Attendance.find({employee: userId, date: { $gte: start, $lt: end}}).sort({ date: 1 })
     res.status(200).json({ success: true, message: 'attendance record retrieved', count : records.length, records})
 })
 
 export const getAllAttendance = asyncHandler(async(req, res) => {
-    if ( req.user.role !== 'employee') {
+    if (!["Admin","Hr"].includes(req.user.role)) {
         const error = new Error('Not authorized')
         error.statusCode = 403
         throw error
@@ -136,13 +146,18 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
-    if(!["Admin","Hr"].includes(req.user.role)) {
+    if(!['Hr','Admin'].includes(req.user.role)) {
         const error = new Error('not authorized to mark absent')
         error.statusCode = 403
         throw error
     }
 
     const selectDate = new Date(date)
+    if(isNaN(selectDate)) {
+        const error = new Error('invalid date')
+        error.statusCode = 400
+        throw error
+    }
     selectDate.setHours(0,0,0,0)
 
     const nextDay = new Date(selectDate)

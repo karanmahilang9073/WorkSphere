@@ -14,7 +14,7 @@ export const predictSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!["Admin","Hr"].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to predict salary')
         error.statusCode = 403
         throw error
@@ -150,7 +150,7 @@ export const analyzeAttendance = asyncHandler(async(req, res) => {
 })
 
 export const aiChat = asyncHandler(async(req, res) => {
-    const userId = req.user.id
+    const userId = req.user._id
     const {message} = req.body
     if(!message || message.trim() === ""){
         const error = new Error('Message is required')

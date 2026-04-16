@@ -12,7 +12,7 @@ const salarySchema = new mongoose.Schema({
 
 salarySchema.pre('save', function(next) {
     this.netSalary = (this.baseSalary || 0) + (this.allowance || 0) - (this.deduction || 0);
-    next()
+    
 })
 
 salarySchema.index({employee : 1, month : 1}, {unique : true})

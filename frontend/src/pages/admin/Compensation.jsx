@@ -1,13 +1,20 @@
 import React, {useState, useEffect} from 'react'
-import { getSalaries, updateSalary, deleteSalary } from '../../services/SalaryService'
+import { getSalaries, deleteSalary, updateStatus } from '../../services/SalaryService'
 import SalaryCard from '../../components/salary/SalaryCard'
 import {toast} from 'react-toastify'
+import SalaryModal from '../../components/salary/SalaryModal'
+import EditSalary from '../../components/salary/EditSalary'
+
+
 
 
 function Compensation() {
     const [salaries, setSalaries] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+
+    const [showModal, setShowModal] = useState(false)
+    const [editingSalary, setEditingSalary] = useState(null)
 
     useEffect(() => {
         const fetch = async() => {
@@ -18,7 +25,7 @@ function Compensation() {
                 setSalaries(res)
             } catch (error) {
                 console.error('error while loading salaries', error)
-                toast.error('failed to fetch tasks')
+                toast.error('failed to fetch salaries')
             } finally {
                 setLoading(false)
             }
@@ -26,31 +33,31 @@ function Compensation() {
         fetch()
     }, [])
 
-    const handleUpdate = async(salaryId) => {
-        setLoading(true)
+    const handleDelete = async(salaryId) => {
         setError(null)
         try {
-            const res = await updateSalary(salaryId)
-            setSalaries(res)
-            toast.success('salary updated successfully')
+            await deleteSalary(salaryId)
+            setSalaries(prev => prev.filter(s => s._id !== salaryId))
+            toast.success('salary deleted successfully')
         } catch (error) {
-            console.error('error while updating task', error)
-            toast.error('failed to update salary')
+            console.error('error while deleting salary', error)
+            toast.error('failed to delete salary')
         } finally {
             setLoading(false)
         }
     }
 
-    const handleDelete = async(salaryId) => {
-        setLoading(true)
+    const handleStatus = async(salaryId, currentStatus) => {
         setError(null)
+        setLoading(true)
         try {
-            const res = await deleteSalary(salaryId)
-            setSalaries(res)
-            toast.success('salary deleted succesfully')
+            const nextStatus = currentStatus === 'pending' ? 'processing' : 'paid'
+            const res = await updateStatus(salaryId, nextStatus)
+            setSalaries(prev => prev.map(s => s._id === salaryId ? res.salary : s))
+            toast.success('salary status updated successfully')
         } catch (error) {
-            console.error('error while deleting salary', error)
-            toast.error('failed to delete salary')
+            console.error('error while updating salary status ', error)
+            toast.error('failed to update salary status')
         } finally {
             setLoading(false)
         }
@@ -61,6 +68,9 @@ function Compensation() {
     <div className='p-4 bg-white shadow rounded-lg'>
         {/* header */}
         <h2 className="text-xl font-semibold mb-4">Salary records</h2>
+
+        {/* create salary button */}
+        <button onClick={() => setShowModal(true)} className='bg-green-500 text-white px-4 py-2 rounded mb-4'>Create salary</button>
 
         {/* loading */}
         {loading && (
@@ -82,20 +92,26 @@ function Compensation() {
         {/* salary grid */}
         {!loading && !error && salaries.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-
                 {salaries.map((salary) => (
                     <div key={salary._id} className='flex flex-col gap-2'>
-                        <SalaryCard salary={salary} />
+                        <SalaryCard salary={salary} onStatusUpdate={handleStatus}  />
                         <div className='flex gap-2'>
-                            <button onClick={() => handleUpdate(salary._id)} className='flex-1 bg-blue-500 text-white py-1 rounded'>Edit</button>
+                            <button onClick={() => setEditingSalary(salary)} disabled={salary.status === 'paid'} className={`flex-1 py-1 rounded ${salary.status === 'paid' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}`}>Edit</button>
                             <button onClick={() => handleDelete(salary._id)} className='flex-1 bg-red-500 text-white py-1 rounded'>Delete</button>
                         </div>
                     </div>
                 ))}
-                    
             </div>
         )}
       
+        {/* salary modal */}
+        {showModal && <SalaryModal onClose={() => setShowModal(false)} />}
+
+        {/* editing salary */}
+        {editingSalary && (
+            <EditSalary salary={editingSalary} onClose={() => setEditingSalary(null)} onUpdate={(updateSalary) => setSalaries(prev => prev.map(s => s._id === updateSalary._id ? updateSalary : s))} />
+        )}
+ 
     </div>
   )
 }

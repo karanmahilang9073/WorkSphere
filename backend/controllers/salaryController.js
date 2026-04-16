@@ -1,6 +1,8 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Salary from "../models/Salary.js";
 import User from "../models/User.js";
+import { payPublishedMail } from "../services/emailService.js";
+
 
 export const createSalary =  asyncHandler(async(req, res) => {
     const {employee, baseSalary, allowance, deduction, month} = req.body 
@@ -17,7 +19,7 @@ export const createSalary =  asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to create salary')
         error.statusCode = 403
         throw error
@@ -33,6 +35,14 @@ export const createSalary =  asyncHandler(async(req, res) => {
     
     const salary = await Salary.create({employee, baseSalary, allowance, deduction, month : monthDate})
     await salary.populate("employee", "name email")
+
+    try {
+        if(status === 'paid'){
+            await payPublishedMail({user : salary.employee, payslip : salary})
+        }
+    } catch (error) {
+        console.log('payslip email failed:', error)
+    }
     
     res.status(201).json({success : true, message : 'salary created successfully', data : salary})
 })
@@ -40,11 +50,11 @@ export const createSalary =  asyncHandler(async(req, res) => {
 export const getAllSalaries = asyncHandler(async(req, res) => {
     const filters = {}
 
-    if(['Admin','Hr'].includes(req.user.role)) {
+    if(['Hr','Admin','hr','admin'].includes(req.user.role)) {
         if(req.query.status) filters.status = req.query.status 
         if(req.query.employee) filters.employee = req.query.emoloyee 
     } else {
-        filters.employee = req.user.id
+        filters.employee = req.user._id
     }
 
     const salaries = await Salary.find(filters).populate("employee", "name email").sort({month : -1})
@@ -62,7 +72,7 @@ export const getSalary = asyncHandler(async(req,res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user.id) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && salary.employee._id.toString() !== req.user._id.toString()) {
         const error = new Error('not Authorized')
         error.statusCode = 403
         throw error
@@ -87,7 +97,7 @@ export const updateSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to update salary')
         error.statusCode = 403
         throw error
@@ -114,7 +124,7 @@ export const updateStatus = asyncHandler(async(req, res) => {
         error.statusCode = 404
         throw error
     }
-    if(!['Admin','Hr'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to update salary status')
         error.statusCode = 403
         throw error
@@ -147,7 +157,7 @@ export const getSalaryByEmployee = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Admin','Hr'].includes(req.user.role) && req.user.id !== employeeId) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role) && req.user._id.toString() !== employeeId) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
@@ -172,7 +182,7 @@ export const deleteSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin'].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized to delete salary')
         error.statusCode = 403
         throw error

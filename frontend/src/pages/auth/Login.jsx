@@ -36,7 +36,7 @@ function Login() {
       toast.success('welcome back to AstraaHR')
       navigate(res.user.role === 'Admin' ? '/admin' : '/employee')
     } catch (error) {
-      const message = error.message || 'login failed'
+      const message = error?.message || error || 'login failed'
       setError(message)
       toast.error(message)
     } finally {
@@ -67,7 +67,7 @@ function Login() {
           {/* email */}
           <div className='mb-4'>
             <label className='block mb-1 text-sm font-medium'>email</label>
-            <input type="email" name='email' onChange={handleChange} placeholder='enter your email' className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' />
+            <input type="email" name='email' value={formData.email} autoFocus onChange={handleChange} placeholder='enter your email' className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' />
           </div>
 
           {/* password */}
@@ -77,7 +77,7 @@ function Login() {
           </div>
 
           {/* button */}
-          <button type='submit' className='w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-200'>{loading ? 'logging in...' : 'Login'}</button>
+          <button type='submit' className='w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-200' disabled={loading}>{loading ? 'logging in...' : 'Login'}</button>
 
           {/* extraa */}
           <p className='text-sm text-center mt-4'>dont have an account?{' '}
@@ -85,9 +85,6 @@ function Login() {
           </p>
         </form>
       </div>
-
-
-
     </div>
     </div>
   )

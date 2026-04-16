@@ -1,20 +1,21 @@
 import asyncHandler from "../middlewares/asyncHandler.js"
 import User from "../models/User.js"
 
+
 // get users
 export const getUsers = asyncHandler(async(req, res) => {
-    if(!["Admin","Hr"].includes(req.user.role)) {
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error
     }
-    const users = await User.find().select("-password").sort({createdAt : -1})
+    const users = await User.find({role : "Employee"}).select("-password").sort({createdAt : -1})
     res.status(200).json({ success: true, count: users.length, users})
 })
 
 // get single user profile
 export const getUserProfile = asyncHandler(async(req, res) =>{
-    const userId = req.user.id 
+    const userId = req.user._id 
     const user = await User.findById(userId).select("-password")
     if (!user) {
         const error = new Error('user not found')
@@ -36,7 +37,7 @@ export const updateUser = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if (req.user.id !== user._id.toString() && req.user.role !== "Admin") {
+    if (req.user._id.toString() !== user._id.toString() && req.user.role !== "Admin") {
         const error = new Error('not authorized')
         error.statusCode = 403
         throw error

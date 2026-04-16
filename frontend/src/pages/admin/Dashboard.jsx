@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import {useState, useEffect} from 'react'
 import { getUsers } from '../../services/userService'
 import { getTasks } from '../../services/TaskService'
 import { getLeaves } from '../../services/LeaveService'
@@ -7,7 +7,7 @@ import {Link} from 'react-router-dom'
 
 
 function Dashboard() {
-    const [totalEmployees, setTotalEmployees] = useState([])
+    const [totalEmployees, setTotalEmployees] = useState(0)
     const [tasks, setTasks] = useState([])
     const [pendingLeaves, setPendingLeaves] = useState(0)
     const [loading, setLoading] = useState(true)
@@ -16,10 +16,10 @@ function Dashboard() {
         const fetchStats = async() => {
             setLoading(true)
             try {
-                const [users, tasks, leaves] = await Promise.all([getUsers(), getTasks(), getLeaves()])
-                setTotalEmployees(users)
-                setTasks(tasks)
-                setPendingLeaves(leaves.filter(l => l.status === 'pending').length)
+                const [userRes, taskRes, leaveRes] = await Promise.all([getUsers(), getTasks(), getLeaves()])
+                setTotalEmployees(userRes.length)
+                setTasks(taskRes)
+                setPendingLeaves(leaveRes.filter(l => l.status === 'pending').length)
             } catch (error) {
                 console.error('error while fetching stats', error)
                 toast.error('failed to fetch stats')
@@ -39,7 +39,7 @@ function Dashboard() {
     }
 
   return (
-    <div className='p-6 bg-gray-100 min-h-screen'>
+    <div className='p-6 bg-gray-100'>
         {/* header */}
         <h1 className='text-3xl font-bold mb-5'>Admin dashboard</h1>
 
@@ -49,7 +49,7 @@ function Dashboard() {
             {/* employee */}
             <div className="bg-white p-5 rounded-xl shadow">
                 <h2 className="text-gray-500">Total Employee</h2>
-                <p className="text-2xl font-bold">{totalEmployees.length}</p>
+                <p className="text-2xl font-bold">{totalEmployees}</p>
             </div>
             
             {/* tasks */}
@@ -71,7 +71,7 @@ function Dashboard() {
             <h2 className="text-xl font-semibold mb-4">quick actions</h2>
 
             <div className="flex flex-wrap gap-4">
-                <Link to='/admin/employees' className='bg-blue-500 text-white hover:bg-blue-700'>Employees</Link>
+                <Link to='/admin/employees' className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700'>Employees</Link>
 
                 <Link to='/admin/tasks' className='bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700'>Tasks</Link>
 

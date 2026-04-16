@@ -1,11 +1,23 @@
 import {useState, useEffect} from 'react'
 import { getUsers, updateUser, deleteUser } from '../../services/userService'
 import { toast } from 'react-toastify'
+import EditemployeeModal from '../../components/common/EditemployeeModal'
+import { useNavigate } from 'react-router-dom'
+
 
 function Employee() {
     const [employees, setEmployees] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+
+    const [showModal, setShowModal] =  useState(false)
+    const [selectedEmployee, setSelectedEmployee] = useState(null)
+    const [searchEmp, setSearchEmp] = useState('')
+    const [viewModal, setViewModal] = useState(false)
+
+    const navigate = useNavigate()
+
+    const filterEmp = employees.filter(emp => emp.name.toLowerCase().includes(searchEmp.toLowerCase()) || emp.email.toLowerCase().includes(searchEmp.toLowerCase()))
 
     useEffect(() => {
         const fetchData = async() => {
@@ -24,22 +36,21 @@ function Employee() {
         fetchData()
     }, [])
 
-    const handleEdit = async(id, data) => {
-        setLoading(true)
+    const handleEdit = async( data) => {
         setError(null)
+        const id = selectedEmployee._id
         try {
             const res = await updateUser(id, data)
-            setEmployees(employees => employees.map(e => e._id === id ? res : e))
+            setEmployees(employees => employees.map(e => e._id === id ? res.user : e))
+            setShowModal(false)
+            toast.success('user updated successfully')
         } catch (error) {
             console.error('error while updating user', error)
             toast.error('failed to update user')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
 
     const handleDelete = async(id) => {
-        setLoading(true)
         setError(null)
         try {
             await deleteUser(id)
@@ -48,11 +59,13 @@ function Employee() {
         } catch (error) {
             console.error('failed to delete user', error)
             toast.error('failed to delete user')
-        } finally {
-            setLoading(false)
-        }
+        } 
     }
 
+    const handleView = (emp) => {
+        setSelectedEmployee(emp)
+        setViewModal(true)
+    }
 
   return (
     <div className='p-4 bg-white shadow rounded-lg'>
@@ -74,8 +87,11 @@ function Employee() {
 
         {/* empty state */}
         {!loading && !error && employees.length === 0 && (
-            <div className="text-gray-500 text-center py-4">no employees record found</div>
+            <div className="text-gray-500 text-center py-4">no employee records found</div>
         )}
+
+        {/* searchbar */}
+        <input type="text" placeholder='search by name or email' value={searchEmp} onChange={(e) => setSearchEmp(e.target.value)} className='w-full border p-2 mb-4' />
 
         {/* table */}
         {!loading && !error && employees.length > 0 && (
@@ -90,35 +106,60 @@ function Employee() {
                             <th className='p-3 border-b'>Role</th>
                             <th className='p-3 border-b'>Action</th>
                         </tr>
-                    </thead>\
+                    </thead>
                     
                     {/* table body */}
                     <tbody>
-                       {employees.map((emp) => (
+                       {filterEmp.map((emp) => (
                         <tr key={emp._id} className='hover:bg-gray-100'>
                             <td className='p-3 border-b'>{emp.name}</td>
                             <td className='p-3 border-b'>{emp.email}</td>
                             <td className='p-3 border-b'>{emp.department}</td>
                             <td className='p-3 border-b'>{emp.role}</td>
-                            
-                            {/* actions */}
-                            <td className='p-3 border-b text-center space-x-2'>
-                                <button onClick={() => handleEdit(emp)} className='px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-700'>
-                                    edit
-                                </button>
-                                <button onClick={() => handleDelete(emp._id)} className='px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-700'>
-                                    Remove
-                                </button>
+                            <td className="p-3 border-b">
+                                <button onClick={() => handleView(emp)} className='bg-blue-500 text-white px-2 py-1 rounded mr-2 text-sm'>View</button>
+                                <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='bg-yellow-500 text-white px-2 py-1 rounded text-sm mr-2'>edit</button>
+                                <button onClick={() => handleDelete(emp._id)} className='bg-red-500 text-white px-2 py-1 rounded text-sm'>Delete</button>
+                                <button onClick={() => navigate(`/admin/employee-analytics/${emp._id}`)} className='bg-purple-500 text-white px-2 py-1 rounded mr-2 text-sm'>view analytics</button>
                             </td>
+                            
+
                         </tr>
                        ))}
                     </tbody>
-
                 </table>
+                
             </div>
         )}
+
+        {viewModal && selectedEmployee && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg max-w-md w-full shadow-lg">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">{selectedEmployee.name}</h3>
+            
+            <div className="space-y-4 mb-6">
+                <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.email}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-600">Department</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.department}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-gray-600">Role</p>
+                    <p className="text-lg font-semibold">{selectedEmployee.role}</p>
+                </div>
+            </div>
+            
+            <button onClick={() => setViewModal(false)} className="w-full bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Close</button>
+        </div>
+    </div>
+        )}
         
-      
+      <EditemployeeModal show={showModal} onClose={() => setShowModal(false)} employee={selectedEmployee} onSave={handleEdit} />
+
+        
     </div>
   )
 }

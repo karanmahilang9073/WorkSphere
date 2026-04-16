@@ -9,16 +9,16 @@ function Attendance() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     
-
     useEffect(() => {
         const fetchAttendance = async() => {
             setLoading(true)
             setError(null)
             try {
                 const res = await getAllAttendance()
-                setAttendance(res)
+                setAttendance(res || [])
             } catch (error) {
                 console.error('error while loading attendance', error)
+                setError('failed to load attendances')
                 toast.error('failed to fetch attendance')
             } finally {
                 setLoading(false)
@@ -26,7 +26,6 @@ function Attendance() {
         }
         fetchAttendance()
     }, [])
-
 
   return (
     <div className='p-4 bg-white shadow rounded-lg'>
@@ -48,7 +47,7 @@ function Attendance() {
         {/* empty state */}
         {!loading && !error && attendance.length === 0 && (
             <div className="text-gray-500 text-center py-4">
-                No attendance record found
+                No attendance records found
             </div>
         )}
 

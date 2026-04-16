@@ -29,7 +29,7 @@ app.use(cors({
 
 const PORT = process.env.PORT || 7000
 
-
+    
 // basic response on browser
 app.get('/', (req, res)=> {
     res.send('backend running successfully')

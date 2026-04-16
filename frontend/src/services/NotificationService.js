@@ -11,7 +11,7 @@ export const createNotification = async(data) => {
         const res = await axiosClient.post('/notifications', data)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -21,7 +21,7 @@ export const getMyNotifications = async() => {
         const res = await axiosClient.get('/notifications/my')
         return res.data.notifications
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -31,7 +31,7 @@ export const markAsRead = async(id) => {
         const res = await axiosClient.patch(`/notifications/${id}/read`)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -41,7 +41,7 @@ export const markAllAsRead = async() => {
         const res = await axiosClient.put('/notifications/read-all')
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -51,6 +51,6 @@ export const deleteNotification = async(id) => {
         const res = await axiosClient.delete(`/notifications/${id}`)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }

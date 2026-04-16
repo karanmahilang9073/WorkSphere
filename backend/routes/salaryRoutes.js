@@ -8,7 +8,7 @@ salaryRouter.post('/create-salary', authMiddleware, createSalary)
 salaryRouter.get('/', authMiddleware,getAllSalaries)
 salaryRouter.get("/:id", getSalary)
 salaryRouter.put('/:id', authMiddleware, updateSalary)
-salaryRouter.put('//:id/status', authMiddleware, updateStatus)
+salaryRouter.put('/:id/status', authMiddleware, updateStatus)
 salaryRouter.get('/employee/:id', getSalaryByEmployee)
 salaryRouter.delete('/:id', deleteSalary)
 

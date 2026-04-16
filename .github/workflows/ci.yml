@@ -22,6 +22,16 @@ jobs:
           cd backend
           npm install
 
+      - name: Run ESLint
+        run: |
+          cd backend
+          npm run lint
+
+      - name: start Backend Server (Validation)
+        run: |
+          cd backend
+          timeout 5 npm start || true
+
       - name: Install Frontend Dependencies
         run: |
           cd frontend

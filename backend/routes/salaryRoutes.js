@@ -6,11 +6,11 @@ const salaryRouter = express.Router()
 
 salaryRouter.post('/create-salary', authMiddleware, createSalary)
 salaryRouter.get('/', authMiddleware,getAllSalaries)
-salaryRouter.get("/:id", getSalary)
+salaryRouter.get("/:id", authMiddleware, getSalary)
 salaryRouter.put('/:id', authMiddleware, updateSalary)
 salaryRouter.put('/:id/status', authMiddleware, updateStatus)
-salaryRouter.get('/employee/:id', getSalaryByEmployee)
-salaryRouter.delete('/:id', deleteSalary)
+salaryRouter.get('/employee/:id', authMiddleware, getSalaryByEmployee)
+salaryRouter.delete('/:id', authMiddleware, deleteSalary)
 
 
 export default salaryRouter

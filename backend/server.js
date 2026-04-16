@@ -53,7 +53,7 @@ app.use('/api/ai', aiRouter)
 initSocket(server)
 
 //global error handler
-app.use((err,req,res,) => {
+app.use((err, req, res, next) => {
     console.error(err.stack)
     res.status(err.statusCode || 500).json({success : false, message : err.message || 'internal server error'})
 })

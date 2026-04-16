@@ -9,7 +9,7 @@ export const getUsers = asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
-    const users = await User.find().select("-password").sort({createdAt : -1})
+    const users = await User.find({role : "Employee"}).select("-password").sort({createdAt : -1})
     res.status(200).json({ success: true, count: users.length, users})
 })
 

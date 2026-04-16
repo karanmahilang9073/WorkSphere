@@ -23,7 +23,7 @@ app.use(express.json())
 const server = http.createServer(app)
 
 app.use(cors({
-    origin : "http://localhost:5173",
+    origin : ['http://localhost:3000', 'http://localhost:5173', 'https://astraa-hr.vercel.app'],
     credentials : true,
 }))
 
@@ -53,7 +53,7 @@ app.use('/api/ai', aiRouter)
 initSocket(server)
 
 //global error handler
-app.use((err,req,res,next) => {
+app.use((err,req,res,) => {
     console.error(err.stack)
     res.status(err.statusCode || 500).json({success : false, message : err.message || 'internal server error'})
 })

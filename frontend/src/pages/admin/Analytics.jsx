@@ -5,13 +5,16 @@ import { getLeaves } from '../../services/LeaveService'
 import { getAllAttendance } from '../../services/attendanceService'
 import { getSalaries } from '../../services/SalaryService'
 import { toast } from 'react-toastify'
-import ChatBox from '../../components/ai/ChatBox'
+import { getPerformance } from '../../services/AiService'
+
 
 
 function Analytics() {
     const [stats, setStats] = useState({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+
+    const [aiperformance, setAiPerformance] = useState('')
 
     useEffect(() => {
         const fetchAnalytics = async() => {
@@ -76,6 +79,19 @@ function Analytics() {
         fetchAnalytics()
      }, [])
 
+     const handlePerformance = async(employeeId) => {
+        setLoading(true)
+        setError(null)
+        try {
+            const res = await getPerformance(employeeId)
+            setAiPerformance(res)
+            toast.success('performance insight fetched successfully')
+        } catch (error) {
+            console.error('error while loading performance', error)
+            toast.error('failed to get performance insight')
+        }
+     }
+
 
   return (
     <div className='p-6 grid grid-cols-1 lg:grid-cols-3 gap-6'>
@@ -96,6 +112,9 @@ function Analytics() {
 
         {/* header */}
         <h1 className="text-2xl font-bold mb-6">Dashboard Analytic</h1>
+
+        {/* performance button */}
+        <button onClick={() => handlePerformance(stats?.employeeId)} className='bg-indigo-500 text-white px-4 py-2 rounded mb-4'>Get AI performance insight</button>
 
         {/* grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -141,14 +160,16 @@ function Analytics() {
             </div>
         </div>
 
+        {aiperformance && (
+            <div className="mt-4 p-4 bg-gray-100 rounded">
+                <h2 className="font-semibold">AI performance report</h2>
+                <p className="text-sm  whitespace-pre-wrap">{aiperformance}</p>
+            </div>
+        )}
+
         </div>
 
-        {/* chatbox */}
-        
-        <div className="lg:col-span-1">
-            <ChatBox />
-        </div>
-      
+       
     </div>
   )
 }

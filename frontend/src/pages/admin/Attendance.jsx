@@ -1,7 +1,8 @@
-import React, {useState, useEffect} from 'react'
+import  {useState, useEffect} from 'react'
 import { getAllAttendance } from '../../services/attendanceService'
 import AttendanceCard from '../../components/attendance/AttendanceCard'
 import { toast } from 'react-toastify'
+import ChatBox from '../../components/ai/ChatBox'
 
 
 function Attendance() {
@@ -28,7 +29,9 @@ function Attendance() {
     }, [])
 
   return (
-    <div className='p-4 bg-white shadow rounded-lg'>
+    <div className='p-6 grid grid-cols-1 lg:grid-cols-3 gap-6'>
+
+        <div className="lg:col-span-2">
         {/* header */}
         <h2 className='text-xl font-semibold'>All attendance</h2>
 
@@ -59,6 +62,12 @@ function Attendance() {
                 ))}
             </div>
         )}
+        </div>
+
+        {/* chatbox */}
+        <div className="lg:col-span-1">
+            <ChatBox />
+        </div>
     </div>
   )
 }

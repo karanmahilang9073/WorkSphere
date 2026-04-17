@@ -1,11 +1,11 @@
 import {useState, useEffect} from 'react'
-
 import { getUsers } from '../../services/userService'
 import { getTasks } from '../../services/TaskService'
 import { getLeaves } from '../../services/LeaveService'
 import { getAllAttendance } from '../../services/attendanceService'
 import { getSalaries } from '../../services/SalaryService'
 import { toast } from 'react-toastify'
+import ChatBox from '../../components/ai/ChatBox'
 
 
 function Analytics() {
@@ -78,7 +78,9 @@ function Analytics() {
 
 
   return (
-    <div className='p-6'>
+    <div className='p-6 grid grid-cols-1 lg:grid-cols-3 gap-6'>
+
+        <div className="lg:col-span-2">
 
         {/* loading */}
         {loading && (
@@ -137,6 +139,14 @@ function Analytics() {
                     ₹{stats?.salary?.average}
                 </p>
             </div>
+        </div>
+
+        </div>
+
+        {/* chatbox */}
+        
+        <div className="lg:col-span-1">
+            <ChatBox />
         </div>
       
     </div>

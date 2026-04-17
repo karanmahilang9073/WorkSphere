@@ -4,6 +4,8 @@ import { getTasks } from '../../services/TaskService'
 import { getLeaves } from '../../services/LeaveService'
 import {toast} from 'react-toastify'
 import {Link} from 'react-router-dom'
+import ChatBox from '../../components/ai/ChatBox'
+
 
 
 function Dashboard() {
@@ -39,7 +41,11 @@ function Dashboard() {
     }
 
   return (
-    <div className='p-6 bg-gray-100'>
+    <div className='flex'>
+
+        <div className="w-3/4 p-6 bg-gray-100">
+
+        {/* left side - dashboard */}
         {/* header */}
         <h1 className='text-3xl font-bold mb-5'>Admin dashboard</h1>
 
@@ -80,7 +86,16 @@ function Dashboard() {
                 <Link to='/admin/compensation' className='bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-700'>compensation</Link>
             </div>
         </div>
-      
+
+        </div>
+
+        {/* right side chatboax */}
+        <div className="w-1/4 p-4 bg-white shadow h-screen">
+            <h2 className="text-xl font-semibold mb-3">AI assistant</h2>
+            <ChatBox />
+        </div>
+
+        
     </div>
   )
 }

@@ -152,7 +152,7 @@ function Employee() {
 
         {aiPerformance && (
             <div className="mt-4 p-4 bg-gray-100 rounded">
-                <h3 className="font-semibold">AI performance report - {selectedEmployee?.name}</h3>
+                <h3 className="font-semibold">AI performance report for:- {selectedEmployee?.name}</h3>
                 <p className="text-sm whitespace-pre-wrap">{aiPerformance}</p>
             </div>
         )}

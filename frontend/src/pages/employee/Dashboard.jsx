@@ -59,7 +59,7 @@ function Dashboard() {
       <h1 className="text-2xl font-bold">Employee Dashboard</h1>
 
       {/* grid layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
+      <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ">
         
         {/* TASKS */}
         <StatsCard title='Tasks' icon={ListTodo} value={task.length} bgGradient='bg-gradient-to-br from-blue-400 to-blue-600'>
@@ -71,7 +71,7 @@ function Dashboard() {
           ) : (
             <div className="space-y-1">
               {task.slice(0,2).map((t) => (
-                <div key={t._id} className='bg-white p-2 rounded-lg flex justify-between items-center text-sm'>
+                <div key={t._id} className='bg-white p-3 rounded-lg flex justify-between items-center text-sm shadow-sm'>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${t.status === 'completed' ? 'bg-green-100 text-green-700' : t.status === 'inProgress' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-700'}`}>{t.status}</span>
                   <span className="text-gray-600 text-xs ">{t.deadline ? new Date(t.deadline).toLocaleDateString() : 'No deadline'}</span>
                 </div>
@@ -86,7 +86,7 @@ function Dashboard() {
             <p className="text-gray-500">No attendance</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {attendance.slice(0, 3).map((a) => (
+              {attendance.slice(0, 2).map((a) => (
                 <AttendanceCard key={a._id} attendance={a} />
               ))}
             </div>
@@ -98,7 +98,7 @@ function Dashboard() {
           {salary.length === 0 ? (
             <p className="text-gray-500">No salary records</p>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex justify-center items-center h-full">
               {salary.slice(0, 1).map((s) => (
                 <SalaryCard key={s._id} salary={s} />
               ))}

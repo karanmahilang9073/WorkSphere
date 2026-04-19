@@ -123,7 +123,7 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     end.setHours(23, 59, 59, 999)
 
    const userId  = req.user._id
-    const records = await Attendance.find({employee: userId, date: { $gte: start, $lt: end}}).sort({ date: 1 })
+    const records = await Attendance.find({employee: userId, date: { $gte: start, $lt: end}}).populate('employee', 'name department').sort({ date: 1 })
     res.status(200).json({ success: true, message: 'attendance record retrieved', count : records.length, records})
 })
 

@@ -16,9 +16,9 @@ export const predictSalary = async(employeeId) => {
 }
 
 //recommend task
-export const recommentTask = async(departmentId) => {
+export const recommendTask = async(departmentId) => {
     try {
-        const res = await axiosClient.post('/ai/recomment-task', {departmentId})
+        const res = await axiosClient.post('/ai/recommend-tasks', {departmentId})
         return res.data.data
     } catch (error) {
         errorHandler(error)
@@ -28,7 +28,7 @@ export const recommentTask = async(departmentId) => {
 //analyze leave
 export const analyzeLeave = async(leaveData) => {
     try {
-        const res = await axiosClient.post('/ai/analyze-leave', {leaveData})
+        const res = await axiosClient.post('/ai/analyze-leave', leaveData)
         return res.data.data
     } catch (error) {
         errorHandler(error)
@@ -38,7 +38,8 @@ export const analyzeLeave = async(leaveData) => {
 //performance insight
 export const getPerformance = async(employeeId) => {
     try {
-        const res = await axiosClient.post('/ai/performance', {employeeId})
+        // const res = await axiosClient.post('/ai/performance', {employeeId})
+        const res = await axiosClient.get(`/ai/performance-insights?employeeId=${employeeId}`);
         return res.data.data
     } catch (error) {
         errorHandler(error)
@@ -48,7 +49,7 @@ export const getPerformance = async(employeeId) => {
 //analyze attendance
 export const analyzeAttendance = async() => {
     try {
-        const res = await axiosClient.get('/ai/attendance-analyze')
+        const res = await axiosClient.get('/ai/analyze-attendance')
         return res.data.data 
     } catch (error) {
         errorHandler(error)
@@ -56,9 +57,9 @@ export const analyzeAttendance = async() => {
 }
 
 // chat service
-export const chat = async(message) => {
+export const chat = async(message, context = 'general') => {
     try {
-        const res = await axiosClient.post('/ai/chat', {message})
+        const res = await axiosClient.post('/ai/chat', {message, context})
         return res.data.data
     } catch (error) {
         errorHandler(error)

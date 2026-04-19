@@ -8,7 +8,7 @@ function EditSalary({salary, onClose, onUpdate}) {
     const [deduction, setDeduction] = useState(salary.deduction)
     const [loading, setLoading] = useState(false)
 
-    const netSalary = baseSalary + allowance - deduction
+    const netSalary = (baseSalary || 0) + (allowance || 0) - (deduction || 0)
 
     const handleSubmit = async(e) => {
         e.preventDefault()

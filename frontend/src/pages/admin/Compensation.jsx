@@ -4,7 +4,7 @@ import SalaryCard from '../../components/salary/SalaryCard'
 import {toast} from 'react-toastify'
 import SalaryModal from '../../components/salary/SalaryModal'
 import EditSalary from '../../components/salary/EditSalary'
-
+import { predictSalary } from '../../services/AiService'
 
 
 
@@ -15,6 +15,8 @@ function Compensation() {
 
     const [showModal, setShowModal] = useState(false)
     const [editingSalary, setEditingSalary] = useState(null)
+
+    const [aiResult, setAiresult] = useState("")
 
     useEffect(() => {
         const fetch = async() => {
@@ -63,6 +65,20 @@ function Compensation() {
         }
     }
 
+    const handlePredict = async(employeeId) => {
+        setError(null)
+        setLoading(true)
+        try {
+            const res = await predictSalary(employeeId)
+            setAiresult(res)
+        } catch (error) {
+            console.error('error while predicting salary',error)
+            toast.error('failed to predict salary')
+        } finally {
+            setLoading(false)
+        }
+    } 
+
 
   return (
     <div className='p-4 bg-white shadow rounded-lg'>
@@ -98,9 +114,18 @@ function Compensation() {
                         <div className='flex gap-2'>
                             <button onClick={() => setEditingSalary(salary)} disabled={salary.status === 'paid'} className={`flex-1 py-1 rounded ${salary.status === 'paid' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 text-white'}`}>Edit</button>
                             <button onClick={() => handleDelete(salary._id)} className='flex-1 bg-red-500 text-white py-1 rounded'>Delete</button>
+                            <button onClick={() => handlePredict(salary.employee)} className='bg-indigo-500 text-white py-1 rounded'>Predict salary</button>
                         </div>
                     </div>
                 ))}
+            </div>
+        )}
+
+        {/* predicted salary */}
+        {aiResult && (
+            <div className="mt-4 p4 bg-gray-100 rounded">
+                <h3 className="font-semibold">AI predicion</h3>
+                <p className="text-sm whitespace-pre-wrap">{aiResult}</p>
             </div>
         )}
       

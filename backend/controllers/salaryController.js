@@ -37,7 +37,7 @@ export const createSalary =  asyncHandler(async(req, res) => {
     await salary.populate("employee", "name email")
 
     try {
-        if(status === 'paid'){
+        if(salary.status === 'paid'){
             await payPublishedMail({user : salary.employee, payslip : salary})
         }
     } catch (error) {
@@ -52,7 +52,7 @@ export const getAllSalaries = asyncHandler(async(req, res) => {
 
     if(['Hr','Admin','hr','admin'].includes(req.user.role)) {
         if(req.query.status) filters.status = req.query.status 
-        if(req.query.employee) filters.employee = req.query.emoloyee 
+        if(req.query.employee) filters.employee = req.query.employee 
     } else {
         filters.employee = req.user._id
     }
@@ -169,6 +169,13 @@ export const getSalaryByEmployee = asyncHandler(async(req, res) => {
 
 export const deleteSalary = asyncHandler(async(req, res) => {
     const salaryId = req.params.id 
+
+    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
+        const error = new Error('not authorized to delete salary')
+        error.statusCode = 403
+        throw error
+    }
+
     const salary = await Salary.findById(salaryId)
     if(!salary){
         const error = new Error('salary not found')
@@ -182,13 +189,7 @@ export const deleteSalary = asyncHandler(async(req, res) => {
         throw error
     }
 
-    if(!['Hr','Admin','hr','admin'].includes(req.user.role)) {
-        const error = new Error('not authorized to delete salary')
-        error.statusCode = 403
-        throw error
-    }
-
-    await salary.deleteOne()
+    await Salary.findByIdAndDelete(salaryId)
 
     res.status(200).json({success : true, message : 'salary deleted successfully'})
 })

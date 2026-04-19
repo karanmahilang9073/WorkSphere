@@ -94,7 +94,7 @@ export const analyzeLeavereq = asyncHandler(async(req, res) => {
 })
 
 export const getPerformanceInsights = asyncHandler(async(req, res) => {
-    const {employeeId} = req.body
+    const {employeeId} = req.query
     if(!employeeId){
         const error = new Error('employee id is required')
         error.statusCode =  400
@@ -113,11 +113,19 @@ export const getPerformanceInsights = asyncHandler(async(req, res) => {
     const attendanceData = attendance.length ? attendance .map((a) => {
         return `Date: ${a.date} | Status: ${a.status}`; }).join("\n") : "No attendance records";
 
-    const prompt = `you are an HR performance analyst.
-    based on the following employee data, generate a performance report.
+    const prompt = `you are an HR performance analyst. Analyze this employee data and respond with ONLY valid JSON (no markdown, no code blocks, only json):
     Tasks: ${taskData}
     Attendance: ${attendanceData}
-    provide a summary including: overall performance, works consistency, strengths, area for improvement`
+    
+    Return EXACTLY this JSON structure:
+    {
+      "overallRating": "A/B/C/D",
+      "performanceScore": 0-100,
+      "consistency": "High/Medium/Low",
+      "strengths": ["strength1", "strength2"],
+      "improvements": ["area1", "area2"],
+      "summary": "one sentence summary"
+    }`
 
     const report = await aiResponse(prompt)
 

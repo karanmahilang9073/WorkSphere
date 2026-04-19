@@ -1,82 +1,62 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, { useState, useRef, useEffect} from 'react'
 import { chat } from '../../services/AiService'
 import { toast } from 'react-toastify'
 
 
-
 function ChatBox() {
+    const [msg, setMsg] = useState('')
     const [messages, setMessages] = useState([])
-    const [currentMessage, setCurrentMessage] = useState('')
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
 
-    const messageEndRef = useRef(null)
+    const sendMessage = async() => {
+        if(!msg.trim()) return;
 
-    useEffect(() => {
-        messageEndRef.current?.scrollIntoView({behavior : 'smooth'})
-    }, [messages])
-
-    const handleSend = async() => {
-        const message = currentMessage.trim()
-        if(!message) return;
-        const userMessage = {role : "user", text : message}
-        setMessages((prev) => [...prev, userMessage])
-        setCurrentMessage('')
+        const newMessages = [...messages, {type : "user", text : msg}]
+        setMessages(newMessages)
         setLoading(true)
-        setError(null)
+
         try {
-            const res = await chat(message)
-            const aiReply = res?.reply || 'something went wrong, please try again later'
-            const aiMessage = {role : "ai", text : aiReply}
-            setMessages((prev) => [...prev, aiMessage])
+            const res = await chat(msg)
+            setMessages([...newMessages, {type : 'ai', text : res.reply}])
         } catch (error) {
-            console.error('error while chat', error)
-            setError('failed to chat with AI')
+            console.error('failed to chat with ai', error)
             toast.error('failed to chat with AI')
         } finally {
+            setMsg('')
             setLoading(false)
         }
     }
 
+    const endRef = useRef()
+    useEffect(() => {
+        endRef.current?.scrollIntoView({behaviour : 'smooth'})
+    })
+
 
   return (
-    <div className='flex flex-col h-125 border rounded-lg p-4'>
+    <div className='flex flex-col h-125'>
 
-        {/* error */}
-        {error && (
-            <div className="text-red-500 text-center py-4">{error}</div>
-        )}
-
-
-      {/* message container */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-        {messages.map((msg, index) => (
-            <div key={msg.text + index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`px-4 py-2 rounded-lg max-w-xs ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>
-                    {msg.text}
+        {/* ṃessage */}
+        <div  className="flex-1 overflow-y-auto border p-2 mb-2 space-y-2">
+            {messages.map((m,i) => (
+                <div ref={endRef} key={i} className={`p-2 rounded max-w-[80%] ${m.type === 'user' ? 'bg-blue-500 text-white ml-auto' : "bg-gray-200 text-black"}`}>
+                    <p className="text-sm font-semibold mb-1">
+                        {m.type === 'user' ? 'you' : 'AI'}
+                    </p>
+                    <p className="text-sm whitespace-pre-wrap">{m.text}</p>
                 </div>
-            </div>
-        ))}
+            ))}
 
-        {/* loading indicator */}
-        {loading && (
-            <div className="flex justify-start">
-                <div className="px-4 py-2 rounded-lg bg-gray-200 text-black">
-                    Typing...
-                </div>
-            </div>
-        )}
+            {/* loading */}
+            {loading && (
+                <p className="text-gray-500 text-md">AI is typing...</p>
+            )}
+        </div>
 
-        <div ref={messageEndRef} />
-      </div>
-
-      {/* input and button */}
-        <div className="flex gap-2 mt-4">
-            <input type="text" value={currentMessage} onChange={(e) => setCurrentMessage(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()} placeholder='Type a message...' className='flex-1 border rounded-lg px-3 py-2 outline-none' />
-
-            <button onClick={handleSend} disabled={loading || !currentMessage.trim()} className='bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50'>
-                send
-            </button>
+        {/* .input */}
+        <div className="flex gap-2">
+            <input type="text" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder='type a message...' className="border p-2 flex-1" />
+            <button onClick={sendMessage} className='bg-blue-500 text-white px-3 rounded'>send</button>
         </div>
     </div>
     

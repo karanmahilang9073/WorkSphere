@@ -11,7 +11,7 @@ export const createSalary = async(data) => {
         const res = await axiosClient.post('/salary/create-salary', data)
         return res.data
     } catch (error) {
-        errorHandler(error)
+       throw errorHandler(error)
     }
 }
 
@@ -22,7 +22,7 @@ export const getSalaries = async(params = {}) => {
         const res = await axiosClient.get(`/salary?${query}`)
         return res.data.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -32,7 +32,7 @@ export const getSalary = async(id) => {
         const res = await axiosClient.get(`/salary/${id}`)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -42,7 +42,7 @@ export const updateSalary = async(id, data) => {
         const res = await axiosClient.put(`/salary/${id}`, data)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -52,7 +52,7 @@ export const updateStatus = async(id, status) => {
         const res = await axiosClient.put(`/salary/${id}/status`, {status})
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -62,7 +62,7 @@ export const getSalaryByEmployee = async(employeeId) => {
         const res = await axiosClient.get(`/salary/employee/${employeeId}`)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -72,6 +72,6 @@ export const deleteSalary = async(id) => {
         const res = await axiosClient.delete(`/salary/${id}`)
         return res.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import {ListTodo, Clock, DollarSign, Calendar} from 'lucide-react'
+import StatsCard from "../../components/common/StatsCard";
 
 //services
 import { getTasks } from "../../services/TaskService";
@@ -57,25 +59,29 @@ function Dashboard() {
       <h1 className="text-2xl font-bold">Employee Dashboard</h1>
 
       {/* grid layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 ">
         
         {/* TASKS */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Tasks</h2>
+        <StatsCard title='Tasks' icon={ListTodo} value={task.length} bgGradient='bg-gradient-to-br from-blue-400 to-blue-600'>
           {task.length === 0 ? (
-            <p className="text-gray-500">No tasks</p>
+            <div className="flex items-center gap-2 text-gray-400 py-4">
+              <ListTodo size={20} />
+              <p>No Tasks found</p>
+            </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {task.slice(0, 3).map((t) => (
-                <TaskCard key={t._id} task={t} />
+            <div className="space-y-1">
+              {task.slice(0,2).map((t) => (
+                <div key={t._id} className='bg-white p-2 rounded-lg flex justify-between items-center text-sm'>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${t.status === 'completed' ? 'bg-green-100 text-green-700' : t.status === 'inProgress' ? 'bg-blue-100 text-blue-600' : 'bg-yellow-100 text-yellow-700'}`}>{t.status}</span>
+                  <span className="text-gray-600 text-xs ">{t.deadline ? new Date(t.deadline).toLocaleDateString() : 'No deadline'}</span>
+                </div>
               ))}
             </div>
           )}
-        </div>
+        </StatsCard>
 
         {/* attendance */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Attendance</h2>
+        <StatsCard title='Attendance' icon={Clock} value={attendance.length} bgGradient='bg-gradient-to-br from-green-400 to-green-600'>
           {attendance.length === 0 ? (
             <p className="text-gray-500">No attendance</p>
           ) : (
@@ -85,11 +91,10 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </StatsCard>
 
         {/* salary */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Salary</h2>
+        <StatsCard title='Salary' icon={DollarSign} value={salary.length} bgGradient='bg-gradient-to-br from-purple-400 to-purple-600' subText='pending salary'>
           {salary.length === 0 ? (
             <p className="text-gray-500">No salary records</p>
           ) : (
@@ -99,11 +104,10 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </StatsCard>
 
         {/* leave */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Leaves</h2>
+        <StatsCard title='Leave' icon={Calendar} value={leaves.length} bgGradient='bg-gradient-to-br from-yellow-400 to-yellow-600' subText='pending leaves'>
           {leaves.length === 0 ? (
             <p className="text-gray-500">No leaves</p>
           ) : (
@@ -113,7 +117,7 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </StatsCard>
       </div>
     </div>
   );

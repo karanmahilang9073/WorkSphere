@@ -11,7 +11,7 @@ export const getUsers = async() => {
         const res = await axiosClient.get('/users')
         return res.data.users
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -21,7 +21,7 @@ export const getUserProfile = async() => {
         const res = await axiosClient.get('/users/profile')
         return res.data.user
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -31,7 +31,7 @@ export const updateUser = async(id, data) => {
         const res = await axiosClient.put(`/users/${id}`, data)
         return res.data.user
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -41,6 +41,6 @@ export const deleteUser = async(id) => {
         const res = await axiosClient.delete(`/users/${id}`)
         return res.data
     } catch (error) {
-     errorHandler(error)   
+     throw errorHandler(error)   
     }
 }

@@ -3,6 +3,9 @@ import { createTask, deleteTask, getTasks, updateStatus, updateTask } from '../.
 import {toast} from 'react-toastify'
 import TaskCard from '../../components/task/TaskCard'
 import {getUsers} from '../../services/userService.js'
+import { recommendTask } from '../../services/AiService.js'
+
+
 
 function Tasks() {
     const [tasks, setTasks] = useState([])
@@ -10,6 +13,8 @@ function Tasks() {
     const [showForm, setShowForm] = useState(false)
     const [users, setUser] = useState([])
     const [editTask, setEditTask] = useState(null)
+
+    const [aiTask, setAiTask] = useState("")
 
     const [form, setForm] = useState({
         title : '',
@@ -106,6 +111,20 @@ function Tasks() {
       }
     }
 
+    const handleRecommend = async(departmentId) => {
+      setLoading(true)
+      try {
+        const res = await recommendTask(departmentId)
+        setAiTask(res)
+        toast.success('task recommended successfully')
+      } catch (error) {
+        console.error('error while recommend task', error)
+        toast.error('failed to recomment task')
+      } finally {
+        setLoading(false)
+      }
+    }
+
 
     if(loading) return <p className='text-center mt-10'>Loading...</p>
 
@@ -116,6 +135,9 @@ function Tasks() {
         <h1 className='text-2xl font-bold'>Task</h1>
         <button onClick={() => setShowForm(!showForm)} className='bg-blue-500 text-white px-4 py-2 rounded'>create task</button>
       </div>
+
+      {/* ai task recommen button */}
+      <button onClick={() => handleRecommend()} className='bg-purple-500 text-white px-4 py-2 rounded mb-4'>Recommend Task</button>
 
       {/* create task form */}
       {showForm && (
@@ -152,6 +174,14 @@ function Tasks() {
           {tasks.map((task) => (
             <TaskCard key={task._id} task={task} onDelete={handleDelete} onComplete={handleComplete} />
           ))}
+        </div>
+      )}
+
+      {/* recommended task */}
+      {aiTask && (
+        <div className="mt-4 p-4 bg-gray-100 rounded">
+          <h3 className="font-semibold">AI recommendation</h3>
+          <p className="text-sm whitespace-pre-wrap">{aiTask}</p>
         </div>
       )}
 

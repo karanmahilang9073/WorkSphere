@@ -16,6 +16,10 @@ function LeaveCard({leave, onApprove, onReject}) {
 
   return (
     <div className='bg-white shadow-md rounded-2xl p-5 w-full max-w-md border'>
+
+        {/* applied by */}
+        <p className="text-sm text-gray-500 mb-2"><span className="font-semibold text-gray-700">Applied by: {leave.employee?.name || 'Unknown'}</span></p>
+
         {/* top section */}
         <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold capitalize">{leave.type} Leave</h2>

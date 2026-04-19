@@ -3,6 +3,8 @@ import { getUsers, updateUser, deleteUser } from '../../services/userService'
 import { toast } from 'react-toastify'
 import EditemployeeModal from '../../components/common/EditemployeeModal'
 import { useNavigate } from 'react-router-dom'
+import { getPerformance } from '../../services/AiService'
+
 
 
 function Employee() {
@@ -14,6 +16,8 @@ function Employee() {
     const [selectedEmployee, setSelectedEmployee] = useState(null)
     const [searchEmp, setSearchEmp] = useState('')
     const [viewModal, setViewModal] = useState(false)
+
+    const [aiPerformance, setAiPerformance] = useState('')
 
     const navigate = useNavigate()
 
@@ -67,6 +71,22 @@ function Employee() {
         setViewModal(true)
     }
 
+    const handlePerformance = async(employeeId) => {
+        setLoading(true)
+        setError(null)
+        try {
+            const res = await getPerformance(employeeId)
+            setAiPerformance(res)
+            toast.success('performance insight get successfullly')
+        } catch (error) {
+            console.error('error while fetching performance insight', error)
+            toast.error('failed to get performance insight')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    
   return (
     <div className='p-4 bg-white shadow rounded-lg'>
 
@@ -121,14 +141,19 @@ function Employee() {
                                 <button onClick={() => {setSelectedEmployee(emp); setShowModal(true)}} className='bg-yellow-500 text-white px-2 py-1 rounded text-sm mr-2'>edit</button>
                                 <button onClick={() => handleDelete(emp._id)} className='bg-red-500 text-white px-2 py-1 rounded text-sm'>Delete</button>
                                 <button onClick={() => navigate(`/admin/employee-analytics/${emp._id}`)} className='bg-purple-500 text-white px-2 py-1 rounded mr-2 text-sm'>view analytics</button>
+                                <button onClick={() => {handlePerformance(emp._id); setSelectedEmployee(emp)}} className='bg-indigo-500  text-white px-2 py-1 rounded text-sm mr-2'>AI report</button>
                             </td>
-                            
-
                         </tr>
                        ))}
                     </tbody>
                 </table>
-                
+            </div>  
+        )}
+
+        {aiPerformance && (
+            <div className="mt-4 p-4 bg-gray-100 rounded">
+                <h3 className="font-semibold">AI performance report for:- {selectedEmployee?.name}</h3>
+                <p className="text-sm whitespace-pre-wrap">{aiPerformance}</p>
             </div>
         )}
 

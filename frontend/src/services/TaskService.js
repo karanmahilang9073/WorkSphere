@@ -13,7 +13,7 @@ export const getTasks = async() => {
         const res = await axiosClient.get('/tasks')
         return res.data.data 
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -23,7 +23,7 @@ export const getTaskById = async(id) => {
         const res = await axiosClient.get(`/tasks/${id}`)
         return res.data.data 
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -33,7 +33,7 @@ export const createTask = async(taskData) => {
         const res = await axiosClient.post('/tasks/create-task', taskData)
         return res.data.task
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -43,7 +43,7 @@ export const updateTask = async(id, updatedData) => {
         const res = await axiosClient.put(`/tasks/${id}`,updatedData)
         return res.data.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -53,7 +53,7 @@ export const updateStatus = async(id, status) => {
         const res = await axiosClient.put(`/tasks/update-status/${id}/status`, {status})
         return res.data.data
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 
@@ -63,7 +63,7 @@ export const deleteTask = async(id) => {
         await axiosClient.delete(`/tasks/delete-task/${id}`)
         return id
     } catch (error) {
-        errorHandler(error)
+        throw errorHandler(error)
     }
 }
 

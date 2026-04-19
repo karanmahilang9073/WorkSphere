@@ -133,7 +133,7 @@ export const getAllAttendance = asyncHandler(async(req, res) => {
         error.statusCode = 403
         throw error
     }
-    const records = await Attendance.find().populate('employee', 'name email role').sort({ date: -1 }).lean()
+    const records = await Attendance.find().populate('employee', 'name email role department').sort({ date: -1 }).lean()
 
     res.status(200).json({success: true, count: records.length, attendance: records})
 })

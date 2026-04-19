@@ -132,9 +132,10 @@ function Dashboard() {
             <div className="grid gap-4 md:grid-cols-2">
               {leaves.slice(0, 2).map((l) => (
                 <div key={l._id} className="bg-white p-3 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">{l.type}</p>
+                  <p className="text-sm text-gray-600 mb-1">{l.leaveType}</p>
+                  <p className="text-xs text-gray-500 mb-1">Total days: {l.totalDays}</p>
+                  <p className="text-xs text-gray-700 mb-1">Reason: {l.reason}</p>
                   <div className="flex justify-between items-center">
-                    {/* <span className="text-lg font-bold text-blue-600">{days} days</span> */}
                     <span className={`px-2 py-1 rounded text-xs font-medium ${l.status === 'approved' ? 'bg-green-100 text-green-700' : l.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{l.status}</span>
                   </div>
                 </div>

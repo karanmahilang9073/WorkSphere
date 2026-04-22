@@ -7,7 +7,6 @@ import EditSalary from '../../components/salary/EditSalary'
 import { predictSalary } from '../../services/AiService'
 
 
-
 function Compensation() {
     const [salaries, setSalaries] = useState([])
     const [loading, setLoading] = useState(true)

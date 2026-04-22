@@ -77,7 +77,7 @@ function Register () {
         {/* form  */}
         <form onSubmit={handleSubmit} className='w-full max-w-md bg-white rounded-2xl border-2 shadow-xl p-8 space-y-6  border-gray-100'>
             <div className='text-center'>
-                <h2 className='text-xl font-semibold text-gray-800'>AstraaHR Registration</h2>
+                <h2 className='text-xl font-semibold text-gray-800'>WorkSphere Registration</h2>
                 <p className='text-sm text-gray-500'>Create your employee account</p>
             </div>
 

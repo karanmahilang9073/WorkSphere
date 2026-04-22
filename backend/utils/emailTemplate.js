@@ -3,14 +3,14 @@ const baseTemplate = (content) => {
     <div style="font-family: Arial, san-serif, background: #f4f4f4; padding: 20px;">
         <div style="max-width:600 px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px;">
 
-            <h2 style="text-align: center; color: #4F46E5;">AstraaHR</h2>
+            <h2 style="text-align: center; color: #4F46E5;">WorkSphere</h2>
 
             ${content}
 
             <hr style="margin: 20px 0;" />
 
             <p style="font-size: 12px; color: #888; text-align: center;">
-                © ${new Date().getFullYear} AstraaHR. Allrights reserved.
+                © ${new Date().getFullYear} WorkSphere. Allrights reserved.
             </p>
         </div>
     </div>

@@ -11,9 +11,7 @@ function SalaryCard({salary, onStatusUpdate}) {
     }
 
     const formatMonth = (month) => {
-
         if(!month) return 'invalid month'
-        
         return new Date(month).toLocaleDateString("default",{month : 'long', year : 'numeric'})
     }
 
@@ -24,7 +22,6 @@ function SalaryCard({salary, onStatusUpdate}) {
             <h2 className="text-lg font-semibold">{formatMonth(salary.month)}</h2>
 
             <span className={`px-3 py-1 text-sm rounded-full font-medium ${status[salary.status] || 'bg-gray-100 text-gray-700'}`}>{salary.status?.toUpperCase()}</span>
-
         </div>
 
         {/* net salary */}

@@ -96,7 +96,6 @@ function SalaryModal({onClose}) {
 
                 {/* button */}
                 <button type='submit' disabled={loading} className='w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600'>{loading ? 'creating...' : 'create salary'}</button>
-            
         </form>
       </div>
     </div>

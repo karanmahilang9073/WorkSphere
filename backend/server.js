@@ -23,7 +23,8 @@ app.use(express.json())
 const server = http.createServer(app)
 
 app.use(cors({
-    origin : ['http://localhost:5173', 'https://astraa-hr.vercel.app'],
+    origin : ['http://localhost:5173', 'https://work-sphere-sepia.vercel.app'],
+    // origin : 'http://localhost:5173',
     credentials : true,
 }))
 

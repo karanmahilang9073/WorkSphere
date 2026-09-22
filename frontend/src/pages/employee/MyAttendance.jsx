@@ -2,7 +2,19 @@ import React, { useEffect, useState } from 'react'
 import AttendanceCard from '../../components/attendance/AttendanceCard'
 import { getMyAttendance, checkIn, checkOut, checkInWithQR } from '../../services/attendanceService'
 import { toast } from 'react-toastify'
-import { MapPin, QrCode, Clock, ShieldCheck, Zap, RefreshCw } from 'lucide-react'
+import {
+    MapPin,
+    QrCode,
+    Clock,
+    ShieldCheck,
+    Zap,
+    RefreshCw,
+    Calendar,
+    ChevronDown,
+    Activity,
+    LogOut,
+    CheckCircle2
+} from 'lucide-react'
 
 function MyAttendance() {
     const today = new Date()
@@ -13,6 +25,14 @@ function MyAttendance() {
     const [actionLoading, setActionLoading] = useState(false)
     const [error, setError] = useState(null)
     const [todayAttendance, setTodayAttendance] = useState(null)
+
+    // Real-time clock
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+        return () => clearInterval(timer)
+    }, [])
 
     // QR Modal State
     const [showQRModal, setShowQRModal] = useState(false)
@@ -64,12 +84,12 @@ function MyAttendance() {
             navigator.geolocation.getCurrentPosition(
                 (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
                 () => resolve(null),
-                { timeout: 5000 }
+                { timeout: 6000, enableHighAccuracy: true }
             )
         })
     }
 
-    // Standard / Geo-Check-In
+    // Geo-Fence Check-In
     const handleCheckIn = async () => {
         if (todayAttendance?.checkIn) {
             toast.error("Already checked in today")
@@ -79,8 +99,13 @@ function MyAttendance() {
         setActionLoading(true)
         try {
             const loc = await getCoordinates()
-            const res = await checkIn(loc, loc ? "geofence" : "manual")
-            toast.success(loc ? 'Geo-verified check-in successful!' : 'Check-in successful!')
+            if (!loc) {
+                toast.error("GPS location permission is required. Please enable location access or scan the Office QR Code.")
+                setActionLoading(false)
+                return
+            }
+            const res = await checkIn(loc, "geofence")
+            toast.success('Geo-verified check-in successful!')
             setTodayAttendance(res.attendance)
             setAttendance(prev => [res.attendance, ...prev])
         } catch (err) {
@@ -94,7 +119,7 @@ function MyAttendance() {
     const handleQRCheckIn = async (e) => {
         e.preventDefault()
         if (!qrCodeInput.trim()) {
-            toast.error("Please enter the Office QR code/token")
+            toast.error("Please enter or paste the Office QR token")
             return
         }
 
@@ -117,7 +142,7 @@ function MyAttendance() {
     // Check Out
     const handleCheckOut = async () => {
         if (!todayAttendance) {
-            toast.error("Check-in not found")
+            toast.error("Check-in record not found")
             return
         }
 
@@ -126,7 +151,7 @@ function MyAttendance() {
             const res = await checkOut()
             setTodayAttendance(res.attendance)
             setAttendance(prev => prev.map(a => a._id === res.attendance._id ? res.attendance : a))
-            toast.success('Check-out successful! Work hours recorded.')
+            toast.success('Check-out successful! Shift hours recorded.')
         } catch (err) {
             toast.error(err?.message || 'Check-out failed')
         } finally {
@@ -134,187 +159,244 @@ function MyAttendance() {
         }
     }
 
-    // Summary statistics
+    // Calculations
     const totalHours = attendance.reduce((acc, curr) => acc + (curr.workHours || 0), 0).toFixed(1)
     const totalOvertime = attendance.reduce((acc, curr) => acc + (curr.overtimeHours || 0), 0).toFixed(1)
     const presentDays = attendance.filter(a => a.status === 'present').length
 
     return (
-        <div className='p-6 space-y-6 max-w-7xl mx-auto'>
+        <div className='p-4 md:p-6 space-y-4 max-w-7xl mx-auto'>
 
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Clock className="w-6 h-6 text-indigo-600" /> Attendance & Work Tracking
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-1">Track daily shifts, overtime hours, and verify touchless check-ins</p>
-                </div>
-
-                {/* Month filter */}
-                <div className="flex gap-2">
-                    <select
-                        value={month}
-                        onChange={(e) => setMonth(Number(e.target.value))}
-                        className='border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none'>
-                        {[
-                            'January', 'February', 'March', 'April', 'May', 'June',
-                            'July', 'August', 'September', 'October', 'November', 'December'
-                        ].map((name, i) => (
-                            <option key={i + 1} value={i + 1}>{name}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(Number(e.target.value))}
-                        className='border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none'>
-                        {[2024, 2025, 2026, 2027].map(y => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-gray-500 font-medium">Days Present</p>
-                        <p className="text-2xl font-bold text-gray-900 mt-1">{presentDays}</p>
-                    </div>
-                    <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                        <ShieldCheck className="w-5 h-5" />
-                    </div>
-                </div>
-
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-gray-500 font-medium">Total Hours Worked</p>
-                        <p className="text-2xl font-bold text-indigo-600 mt-1">{totalHours} hrs</p>
-                    </div>
-                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+            {/* Compact Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white px-4 py-3 rounded-2xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
                         <Clock className="w-5 h-5" />
                     </div>
+                    <div>
+                        <h1 className="text-lg font-bold text-slate-900 leading-tight">
+                            My Attendance
+                        </h1>
+                        <p className="text-xs text-slate-500">
+                            Live tracking, geo-verified punches & history
+                        </p>
+                    </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-gray-500 font-medium">Total Overtime</p>
-                        <p className="text-2xl font-bold text-amber-600 mt-1">+{totalOvertime} hrs</p>
+                {/* Filter Month/Year Selector */}
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <select
+                            value={month}
+                            onChange={(e) => setMonth(Number(e.target.value))}
+                            className='appearance-none bg-slate-50 border border-slate-200 text-slate-700 font-medium text-xs rounded-lg pl-2.5 pr-7 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer'>
+                            {[
+                                'January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'
+                            ].map((name, i) => (
+                                <option key={i + 1} value={i + 1}>{name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
-                    <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
-                        <Zap className="w-5 h-5" />
+
+                    <div className="relative">
+                        <select
+                            value={year}
+                            onChange={(e) => setYear(Number(e.target.value))}
+                            className='appearance-none bg-slate-50 border border-slate-200 text-slate-700 font-medium text-xs rounded-lg pl-2.5 pr-7 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer'>
+                            {[2024, 2025, 2026, 2027].map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                 </div>
             </div>
 
-            {/* Today's Action Bar */}
+            {/* Compact KPI Metric Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Days Present */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
+                    <div>
+                        <p className="text-[11px] font-semibold text-slate-400 uppercase">Present</p>
+                        <h3 className="text-xl font-black text-slate-900 mt-0.5">{presentDays} <span className="text-xs font-medium text-slate-400">days</span></h3>
+                    </div>
+                    <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                        <ShieldCheck className="w-4 h-4" />
+                    </div>
+                </div>
+
+                {/* Total Hours Worked */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
+                    <div>
+                        <p className="text-[11px] font-semibold text-slate-400 uppercase">Hours</p>
+                        <h3 className="text-xl font-black text-indigo-600 mt-0.5">{totalHours} <span className="text-xs font-medium text-slate-400">hrs</span></h3>
+                    </div>
+                    <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4" />
+                    </div>
+                </div>
+
+                {/* Total Overtime */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
+                    <div>
+                        <p className="text-[11px] font-semibold text-slate-400 uppercase">Overtime</p>
+                        <h3 className="text-xl font-black text-amber-600 mt-0.5">+{totalOvertime} <span className="text-xs font-medium text-slate-400">hrs</span></h3>
+                    </div>
+                    <div className="w-8 h-8 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+                        <Zap className="w-4 h-4" />
+                    </div>
+                </div>
+
+                {/* Live Clock */}
+                <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-2xs flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase">Current Time</p>
+                        <h3 className="text-sm font-bold font-mono text-white mt-0.5">
+                            {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                        </h3>
+                    </div>
+                    <div className="w-8 h-8 bg-white/10 text-indigo-300 rounded-lg flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Compact Today Shift Banner */}
             {isCurrentMonth && (
-                <div className="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white p-6 rounded-2xl shadow-md">
+                <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-5 py-4 rounded-2xl shadow-sm border border-slate-800">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <span className="text-xs uppercase tracking-wider font-semibold text-indigo-200">Today's Shift Status</span>
-                            <h2 className="text-xl font-bold mt-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                {todayAttendance?.checkIn ? (
+                                    todayAttendance.checkOut ? (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                            <CheckCircle2 className="w-3 h-3" /> Shift Completed
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Shift Active
+                                        </span>
+                                    )
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                        Not Checked In
+                                    </span>
+                                )}
+                                <span className="text-[11px] text-slate-400">
+                                    • {todayAttendance?.shiftType || 'General'} Shift
+                                </span>
+                            </div>
+
+                            <h2 className="text-sm md:text-base font-bold text-white">
                                 {todayAttendance?.checkIn
                                     ? todayAttendance.checkOut
-                                        ? "Shift Completed for Today"
-                                        : "Shift in Progress"
-                                    : "You have not checked in today"}
+                                        ? `Completed for today (Closed at ${new Date(todayAttendance.checkOut).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })})`
+                                        : `Checked in at ${new Date(todayAttendance.checkIn).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+                                    : "Start your shift with Geo-Fence or QR scan"}
                             </h2>
-                            <p className="text-xs text-indigo-200 mt-1 flex items-center gap-2">
-                                <MapPin className="w-3.5 h-3.5" /> Geo-Fencing & Office QR Verification Enabled
-                            </p>
                         </div>
 
-                        <div className="flex flex-wrap gap-3">
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={handleCheckIn}
                                 disabled={todayAttendance?.checkIn || actionLoading}
-                                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl disabled:opacity-50 transition-colors flex items-center gap-2 text-sm shadow-sm">
-                                <MapPin className="w-4 h-4" /> Check In (Geo-Fence)
+                                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 text-xs shadow-xs">
+                                <MapPin className="w-3.5 h-3.5" /> Check In
                             </button>
 
                             <button
                                 onClick={() => setShowQRModal(true)}
                                 disabled={todayAttendance?.checkIn || actionLoading}
-                                className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl disabled:opacity-50 transition-colors flex items-center gap-2 text-sm border border-white/20">
-                                <QrCode className="w-4 h-4" /> Scan Office QR
+                                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 text-xs border border-white/20">
+                                <QrCode className="w-3.5 h-3.5 text-indigo-300" /> QR Scan
                             </button>
 
                             <button
                                 onClick={handleCheckOut}
                                 disabled={!todayAttendance?.checkIn || todayAttendance?.checkOut || actionLoading}
-                                className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-xl disabled:opacity-50 transition-colors flex items-center gap-2 text-sm shadow-sm">
-                                Check Out
+                                className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 text-xs shadow-xs">
+                                <LogOut className="w-3.5 h-3.5" /> Check Out
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Attendance Cards Grid */}
-            <div>
-                <h3 className="text-base font-semibold text-gray-800 mb-4">Monthly Attendance Log</h3>
+            {/* Attendance Log Section */}
+            <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-800">Monthly Log</h3>
+                    <span className="text-xs text-slate-400">{attendance.length} entries</span>
+                </div>
 
                 {loading && (
-                    <div className="py-12 flex justify-center items-center text-gray-500 gap-2">
-                        <RefreshCw className="w-5 h-5 animate-spin" /> Loading attendance records...
+                    <div className="py-10 flex justify-center items-center text-slate-500 gap-2 bg-white rounded-xl border border-slate-200">
+                        <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
+                        <span className="text-xs">Loading records...</span>
                     </div>
                 )}
 
-                {error && <p className="text-rose-500 text-center py-6">{error}</p>}
+                {error && (
+                    <div className="text-rose-600 text-center py-4 bg-rose-50 rounded-xl border border-rose-200 text-xs font-medium">
+                        {error}
+                    </div>
+                )}
 
                 {!loading && attendance.length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-xl border border-gray-100 text-gray-500">
-                        No attendance records found for this period.
+                    <div className="text-center py-10 bg-white rounded-xl border border-dashed border-slate-200 text-slate-400">
+                        <p className="text-xs">No records found for this period.</p>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {attendance.map(a => (
                         <AttendanceCard key={a._id} attendance={a} />
                     ))}
                 </div>
             </div>
 
-            {/* QR Check-In Modal */}
+            {/* QR Modal */}
             {showQRModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                        <div className="flex justify-between items-center border-b pb-3">
-                            <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                                <QrCode className="w-5 h-5 text-indigo-600" /> Office QR Code Check-In
+                <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-5 max-w-sm w-full shadow-xl space-y-4 border border-slate-100">
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                                <QrCode className="w-4 h-4 text-indigo-600" /> Office QR Check-In
                             </h3>
-                            <button onClick={() => setShowQRModal(false)} className="text-gray-400 hover:text-gray-600 font-bold text-lg">×</button>
+                            <button onClick={() => setShowQRModal(false)} className="text-slate-400 hover:text-slate-600 text-lg font-bold">
+                                ×
+                            </button>
                         </div>
 
-                        <p className="text-xs text-gray-500">
-                            Scan or paste the active 60-second QR token displayed on your office kiosk screen:
+                        <p className="text-xs text-slate-500">
+                            Enter or paste the active QR token from the kiosk screen:
                         </p>
 
-                        <form onSubmit={handleQRCheckIn} className="space-y-4">
+                        <form onSubmit={handleQRCheckIn} className="space-y-3">
                             <input
                                 type="text"
-                                placeholder="Paste QR token / Scanned code"
+                                placeholder="Paste QR token..."
                                 value={qrCodeInput}
                                 onChange={(e) => setQrCodeInput(e.target.value)}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
                                 autoFocus
                             />
 
-                            <div className="flex gap-2 justify-end pt-2">
+                            <div className="flex gap-2 justify-end pt-1">
                                 <button
                                     type="button"
                                     onClick={() => setShowQRModal(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+                                    className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={actionLoading}
-                                    className="px-5 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50">
-                                    {actionLoading ? 'Verifying...' : 'Submit Check-In'}
+                                    className="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50">
+                                    {actionLoading ? 'Verifying...' : 'Verify'}
                                 </button>
                             </div>
                         </form>

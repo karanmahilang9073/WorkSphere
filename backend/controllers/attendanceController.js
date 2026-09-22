@@ -52,24 +52,25 @@ export const checkIn = asyncHandler(async (req, res) => {
     }
 
     const userId = req.user._id
-    const { location, checkInMethod } = req.body
+    const { location } = req.body
+
+    if (!location?.latitude || !location?.longitude) {
+        const error = new Error('GPS location is required for check-in. Please enable location access or scan the Office QR Code.')
+        error.statusCode = 400
+        throw error
+    }
 
     // Geo-fencing verification if office coordinates configured
     const officeLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null
     const officeLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null
     const maxRadius = process.env.OFFICE_RADIUS_METERS ? parseFloat(process.env.OFFICE_RADIUS_METERS) : 500
 
-    let resolvedMethod = checkInMethod || "manual"
-
-    if (location?.latitude && location?.longitude) {
-        resolvedMethod = checkInMethod || "geofence"
-        if (officeLat !== null && officeLng !== null) {
-            const distance = calculateDistanceMeters(location.latitude, location.longitude, officeLat, officeLng)
-            if (distance > maxRadius) {
-                const error = new Error(`You are ${Math.round(distance)}m away from the office. Allowed radius: ${maxRadius}m`)
-                error.statusCode = 403
-                throw error
-            }
+    if (officeLat !== null && officeLng !== null) {
+        const distance = calculateDistanceMeters(location.latitude, location.longitude, officeLat, officeLng)
+        if (distance > maxRadius) {
+            const error = new Error(`You are ${Math.round(distance)}m away from the office. Allowed radius is ${maxRadius}m`)
+            error.statusCode = 403
+            throw error
         }
     }
 
@@ -97,15 +98,15 @@ export const checkIn = asyncHandler(async (req, res) => {
         shiftStart: shift.start,
         shiftEnd: shift.end,
         late,
-        checkInMethod: resolvedMethod,
-        location: location ? {
+        checkInMethod: "geofence",
+        location: {
             latitude: location.latitude,
             longitude: location.longitude,
-            address: location.address || "Office Coordinates"
-        } : undefined
+            address: location.address || "Office Geo-Fence"
+        }
     })
 
-    res.status(201).json({ success: true, message: 'check-in successful', attendance })
+    res.status(201).json({ success: true, message: 'Geo-verified check-in successful', attendance })
 })
 
 export const checkout = asyncHandler(async (req, res) => {

@@ -13,7 +13,7 @@ const attendanceSchema = new mongoose.Schema({
     shiftEnd: {type: String, default: "19:00", trim : true},
     late: {type: Boolean, default: false},
     overtimeHours: {type: Number, default: 0},
-    checkInMethod: {type: String, enum: ["manual", "qr", "geofence"], default: "manual"},
+    checkInMethod: {type: String, enum: ["qr", "geofence"], default: "geofence"},
     location: {
         latitude: {type: Number},
         longitude: {type: Number},

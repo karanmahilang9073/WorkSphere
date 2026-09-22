@@ -1,125 +1,128 @@
 import { memo } from 'react'
-import { MapPin, QrCode, Clock, Zap } from 'lucide-react'
+import { MapPin, QrCode, Clock, Zap, ArrowRight } from 'lucide-react'
 
 function AttendanceCard({ attendance, onAnalyze }) {
 
   if (!attendance) return null;
 
-  const workHour = (checkIn, checkOut) => {
-    if (!checkIn || !checkOut) return 'N/A'
-
+  const getWorkHoursNumber = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return 0
     const diff = new Date(checkOut) - new Date(checkIn)
-    if (diff < 0) return 'invalid'
+    if (diff <= 0) return 0
+    return Math.min(Math.round((diff / (1000 * 60 * 60)) * 10) / 10, 24)
+  }
 
+  const formatHoursDisplay = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return 'In progress'
+    const diff = new Date(checkOut) - new Date(checkIn)
+    if (diff < 0) return 'Invalid'
     const hours = (diff / (1000 * 60 * 60)).toFixed(1)
-    if (isNaN(hours)) return 'invalid'
-
-    return `${hours}h`
+    return `${hours} hrs`
   }
 
   const formatDateTime = (date, options = {}) => {
-    if (!date) return options.type === 'time' ? 'not recorded' : 'invalid date'
+    if (!date) return options.type === 'time' ? '--:--' : 'Invalid Date'
     if (options.type === 'time') {
-      return new Date(date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
     }
-    return new Date(date).toLocaleDateString('en-IN', { day: "2-digit", month: 'long', year: 'numeric' })
+    return new Date(date).toLocaleDateString('en-US', { day: "numeric", month: "short", year: "numeric" })
   }
 
-  const statusColor = {
-    present: 'bg-green-100 text-green-700',
-    absent: 'bg-red-100 text-red-700',
-    leave: 'bg-blue-100 text-blue-700'
-  }
+  const hoursNum = attendance.workHours || getWorkHoursNumber(attendance.checkIn, attendance.checkOut)
+  const progressPercent = Math.min(Math.round((hoursNum / 8) * 100), 100)
+
+  const isPresent = attendance.status?.toLowerCase() === 'present'
+  const isLeave = attendance.status?.toLowerCase() === 'leave'
 
   return (
-    <div className='bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between'>
+    <div className='bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between'>
       
       <div>
-        {/* employee name & shift */}
-        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+        {/* Header: Date + Status Badges */}
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <span className="font-semibold text-gray-800">{attendance.employee?.name || 'Staff Member'}</span>
-            <span className="text-xs text-gray-500 ml-2">({attendance.employee?.department || 'General'})</span>
+            <h4 className="text-sm font-bold text-slate-800 tracking-tight">{formatDateTime(attendance.date)}</h4>
+            <span className="text-[11px] font-medium text-slate-400">{attendance.employee?.name || 'Staff Member'}</span>
           </div>
-          <span className="text-xs font-semibold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
-            {attendance.shiftType || 'General'} Shift
-          </span>
-        </div>
 
-        {/* date and status */}
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <p className="text-xs text-gray-500">Date</p>
-            <p className="text-base font-semibold text-gray-900">{formatDateTime(attendance.date)}</p>
-          </div>
-          <div className="flex gap-1.5 items-center">
+          <div className="flex gap-1 items-center">
             {attendance.late && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Late</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
+                Late
+              </span>
             )}
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[attendance.status?.toLowerCase()] || statusColor.absent}`}>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide ${
+              isPresent 
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' 
+                : isLeave 
+                ? 'bg-blue-50 text-blue-700 border border-blue-200/70' 
+                : 'bg-rose-50 text-rose-700 border border-rose-200/70'
+            }`}>
               {attendance.status?.toUpperCase()}
             </span>
           </div>
         </div>
 
-        {/* Check-in & Check-out boxes */}
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-gray-400" /> Check-in
-            </p>
-            <p className="font-semibold text-xs text-gray-800">{formatDateTime(attendance.checkIn, { type: 'time' })}</p>
+        {/* Shift Badge & Punches */}
+        <div className="grid grid-cols-2 gap-2 mb-2.5">
+          <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Check-In</span>
+            <span className="text-xs font-bold text-slate-800">{formatDateTime(attendance.checkIn, { type: 'time' })}</span>
           </div>
-          <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-            <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-gray-400" /> Check-out
-            </p>
-            <p className="font-semibold text-xs text-gray-800">{formatDateTime(attendance.checkOut, { type: 'time' })}</p>
+          <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <span className="text-[10px] text-slate-400 block mb-0.5">Check-Out</span>
+            <span className="text-xs font-bold text-slate-800">{formatDateTime(attendance.checkOut, { type: 'time' })}</span>
           </div>
         </div>
 
-        {/* Hours & Overtime */}
-        <div className="bg-blue-50/60 p-2.5 rounded-lg border border-blue-100 mb-3 flex justify-between items-center">
-          <div>
-            <p className="text-xs text-gray-500">Hours worked</p>
-            <p className="font-bold text-sm text-blue-700">{workHour(attendance.checkIn, attendance.checkOut)}</p>
+        {/* Hours & Overtime Progress */}
+        <div className="bg-slate-50/80 p-2 rounded-lg border border-slate-100 mb-2.5">
+          <div className="flex justify-between items-center text-[11px] mb-1">
+            <span className="text-slate-500 font-medium">Work Hours</span>
+            <span className="font-bold text-indigo-600">{formatHoursDisplay(attendance.checkIn, attendance.checkOut)}</span>
           </div>
+          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+            <div 
+              className="bg-indigo-600 h-full rounded-full transition-all duration-300" 
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+
           {attendance.overtimeHours > 0 && (
-            <div className="text-right">
-              <p className="text-xs text-amber-600 font-medium flex items-center gap-1 justify-end">
-                <Zap className="w-3 h-3 text-amber-500" /> Overtime
-              </p>
-              <p className="font-bold text-xs text-amber-700">+{attendance.overtimeHours} hrs</p>
+            <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-200/60 text-[10px]">
+              <span className="text-amber-700 font-semibold flex items-center gap-0.5">
+                <Zap className="w-2.5 h-2.5 text-amber-500" /> OT
+              </span>
+              <span className="font-bold text-amber-800">+{attendance.overtimeHours} hrs</span>
             </div>
           )}
         </div>
 
-        {/* Check-in Method / Location Tag */}
-        {attendance.checkIn && (
-          <div className="text-xs text-gray-500 flex items-center gap-1 mb-3">
-            {attendance.checkInMethod === 'qr' ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[11px] font-medium border border-emerald-200">
-                <QrCode className="w-3 h-3" /> QR Check-in
-              </span>
-            ) : attendance.checkInMethod === 'geofence' || attendance.location?.latitude ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-50 text-cyan-700 rounded text-[11px] font-medium border border-cyan-200">
-                <MapPin className="w-3 h-3" /> Geo-Verified
+        {/* Verification Method Pill */}
+        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2">
+          <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-600 font-medium">
+            {attendance.shiftType || 'General'} Shift
+          </span>
+          {attendance.checkIn && (
+            attendance.checkInMethod === 'qr' ? (
+              <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                <QrCode className="w-3 h-3 text-emerald-600" /> QR
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[11px]">
-                Manual Check-in
+              <span className="inline-flex items-center gap-1 text-cyan-700 font-medium">
+                <MapPin className="w-3 h-3 text-cyan-600" /> Geo
               </span>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
 
       {onAnalyze && (
         <button
           onClick={() => onAnalyze(attendance.employee?._id)}
           disabled={!attendance.employee}
-          className='w-full mt-1 bg-indigo-600 text-white text-xs font-semibold py-2 px-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors'>
-          Analyze with AI
+          className='w-full mt-1 bg-slate-800 hover:bg-indigo-600 text-white text-[11px] font-semibold py-1.5 px-2 rounded-lg transition-colors disabled:opacity-40 flex items-center justify-center gap-1'>
+          Analyze AI <ArrowRight className="w-3 h-3" />
         </button>
       )}
 

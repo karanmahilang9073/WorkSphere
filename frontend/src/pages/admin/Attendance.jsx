@@ -33,10 +33,10 @@ function Attendance() {
     fetchAttendance();
   }, [page]);
 
-  const handleAttendance = async () => {
+  const handleAttendance = async (employeeId) => {
     setLoading(true);
     try {
-      const res = await analyzeAttendance();
+      const res = await analyzeAttendance(employeeId);
       setAiAttendance(res);
       toast.success("attendance analyzed successfully");
     } catch (error) {
@@ -53,11 +53,6 @@ function Attendance() {
       {/* header */}
       <div className="flex-1">
         <h2 className="text-xl font-semibold">All attendance</h2>
-
-        {/* ai attendance analyze */}
-        <button onClick={handleAttendance} className="bg-indigo-500 text-white px-4 py-2 rounded mb-4">
-          Analyze attendance (AI)
-        </button>
 
         {/* loading */}
         {loading && (
@@ -81,7 +76,7 @@ function Attendance() {
           <>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
             {attendance.map((a) => (
-              <AttendanceCard key={a._id} attendance={a} />
+              <AttendanceCard key={a._id} attendance={a} onAnalyze={handleAttendance} />
             ))}
           </div>
           <div className="flex justify-center items-center gap-4 mt-6">

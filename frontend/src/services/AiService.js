@@ -47,9 +47,9 @@ export const getPerformance = async(employeeId) => {
 }
 
 //analyze attendance
-export const analyzeAttendance = async() => {
+export const analyzeAttendance = async(employeeId) => {
     try {
-        const res = await axiosClient.get('/ai/analyze-attendance')
+        const res = await axiosClient.get(`/ai/analyze-attendance?employeeId=${employeeId}`)
         return res.data.data 
     } catch (error) {
         errorHandler(error)

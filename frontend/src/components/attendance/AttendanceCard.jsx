@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-function AttendanceCard({ attendance }) {
+function AttendanceCard({ attendance, onAnalyze }) {
 
   if(!attendance) return null;
 
@@ -62,6 +62,9 @@ function AttendanceCard({ attendance }) {
           <p className="text-xs text-gray-500 mb-1">Hours worked</p>
           <p className="font-semibold text-sm text-blue-600">{workHour(attendance.checkIn, attendance.checkOut)}</p>
         </div>
+        <button onClick={() => onAnalyze(attendance.employee._id)} disabled={!attendance.employee} className='bg-blue-500 text-white px-4 py-2 w-58 rounded hover:bg-blue-600'>
+          Analyze AI
+        </button>
       </div>
 
     </div>

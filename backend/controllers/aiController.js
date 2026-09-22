@@ -133,7 +133,15 @@ export const getPerformanceInsights = asyncHandler(async(req, res) => {
 })
 
 export const analyzeAttendance = asyncHandler(async(req, res) => {
-    const records = await Attendance.find().populate("employee")
+    const employeeId = req.query.employeeId
+    if(!employeeId){
+        const error = new Error('Employee ID is required')
+        error.statusCode = 400
+        throw error
+    }
+    
+    const records = await Attendance.find({employee: employeeId}).populate('employee')
+
     if(!records || records.length === 0){
         const error = new Error('no attendance records found')
         error.statusCode = 404

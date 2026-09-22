@@ -1,5 +1,6 @@
 import asyncHandler from "../middlewares/asyncHandler.js"
 import Attendance from "../models/Attendance.js"
+import JWT from "jsonwebtoken"
 
 const getToday = () => {
     const start = new Date()
@@ -9,68 +10,118 @@ const getToday = () => {
 
 const calculateHours = (checkIn, checkOut) => {
     const diff = checkOut - checkIn
-    return diff/(1000*60*60)
+    return diff / (1000 * 60 * 60)
 }
 
-export const checkIn = asyncHandler(async(req, res) => {
-    if(req.user.role !== "Employee") {
+// Haversine formula to compute distance in meters
+const calculateDistanceMeters = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3 // Earth radius in meters
+    const phi1 = (lat1 * Math.PI) / 180
+    const phi2 = (lat2 * Math.PI) / 180
+    const deltaPhi = ((lat2 - lat1) * Math.PI) / 180
+    const deltaLambda = ((lon2 - lon1) * Math.PI) / 180
+
+    const a =
+        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+        Math.cos(phi1) * Math.cos(phi2) *
+        Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return R * c
+}
+
+// Dynamic Shift Helper
+const resolveShift = (now) => {
+    const hour = now.getHours()
+    if (hour >= 6 && hour < 12) {
+        return { type: "Morning", start: "08:00", startHour: 8, startMin: 0, end: "17:00", shiftEnum: "morning" }
+    } else if (hour >= 12 && hour < 17) {
+        return { type: "General", start: "10:00", startHour: 10, startMin: 0, end: "19:00", shiftEnum: "general" }
+    } else if (hour >= 17 && hour < 22) {
+        return { type: "Evening", start: "14:00", startHour: 14, startMin: 0, end: "23:00", shiftEnum: "evening" }
+    } else {
+        return { type: "Night", start: "22:00", startHour: 22, startMin: 0, end: "06:00", shiftEnum: "night" }
+    }
+}
+
+export const checkIn = asyncHandler(async (req, res) => {
+    if (req.user.role !== "Employee") {
         const error = new Error('only employees can checkIn')
         error.statusCode = 403
         throw error
     }
-    
-    const userId = req.user._id
 
-    const start =  getToday()
+    const userId = req.user._id
+    const { location, checkInMethod } = req.body
+
+    // Geo-fencing verification if office coordinates configured
+    const officeLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null
+    const officeLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null
+    const maxRadius = process.env.OFFICE_RADIUS_METERS ? parseFloat(process.env.OFFICE_RADIUS_METERS) : 500
+
+    let resolvedMethod = checkInMethod || "manual"
+
+    if (location?.latitude && location?.longitude) {
+        resolvedMethod = checkInMethod || "geofence"
+        if (officeLat !== null && officeLng !== null) {
+            const distance = calculateDistanceMeters(location.latitude, location.longitude, officeLat, officeLng)
+            if (distance > maxRadius) {
+                const error = new Error(`You are ${Math.round(distance)}m away from the office. Allowed radius: ${maxRadius}m`)
+                error.statusCode = 403
+                throw error
+            }
+        }
+    }
+
+    const start = getToday()
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
 
-    const existing = await Attendance.findOne({employee : userId, date : {$gte : start, $lt : end}})
-    if(existing) {
+    const existing = await Attendance.findOne({ employee: userId, date: { $gte: start, $lt: end } })
+    if (existing) {
         const error = new Error('already checked in today')
         error.statusCode = 400
         throw error
     }
 
     const now = new Date()
-    const hour = now.getHours()
+    const shift = resolveShift(now)
+    const late = now.getHours() > shift.startHour || (now.getHours() === shift.startHour && now.getMinutes() > shift.startMin)
 
-    const shifts = {
-        day : {start : '10:00', startHour : 10, startMin : 0, end : '19:00'},
-        night : {start : '22:00', startHour : 22, startMin : 0, end : '06:00'},
-    }
-
-    // determine night shift dynamically
-    const isNightShift = hour >= 22 || hour < 6
-    const shift = isNightShift ? shifts.night : shifts.day
-
-    const late = hour > shift.startHour || (hour === shift.startHour && now.getMinutes() > shift.startMin)
-    
     const attendance = await Attendance.create({
         employee: userId,
         date: start,
         checkIn: now,
-        shiftStart : shift.start,
-        shiftEnd : shift.end,
-        late
+        shift: shift.shiftEnum,
+        shiftType: shift.type,
+        shiftStart: shift.start,
+        shiftEnd: shift.end,
+        late,
+        checkInMethod: resolvedMethod,
+        location: location ? {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            address: location.address || "Office Coordinates"
+        } : undefined
     })
-    res.status(201).json({ success: true, message: 'check-in successful', attendance})
+
+    res.status(201).json({ success: true, message: 'check-in successful', attendance })
 })
 
-export const checkout= asyncHandler(async(req, res) => {
-    if(req.user.role !== "Employee") {
+export const checkout = asyncHandler(async (req, res) => {
+    if (req.user.role !== "Employee") {
         const error = new Error('only employee can check out')
         error.statusCode = 403
         throw error
     }
-   
+
     const userId = req.user._id
 
     const start = getToday()
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
 
-    const attendance = await Attendance.findOne({employee: userId, date: {$gte : start, $lt : end}})
+    const attendance = await Attendance.findOne({ employee: userId, date: { $gte: start, $lt: end } })
     if (!attendance) {
         const error = new Error('check-in not found')
         error.statusCode = 404
@@ -81,7 +132,7 @@ export const checkout= asyncHandler(async(req, res) => {
         error.statusCode = 400
         throw error
     }
-    if(!attendance.checkIn) {
+    if (!attendance.checkIn) {
         const error = new Error('invalid check-in record')
         error.statusCode = 400
         throw error
@@ -93,17 +144,101 @@ export const checkout= asyncHandler(async(req, res) => {
     const hours = calculateHours(attendance.checkIn, now)
     attendance.workHours = Number(hours.toFixed(2))
 
-    //overtime
+    // Overtime calculation (Standard 8 working hours threshold)
     const OVERTIME_THRESHOLD = 8
     if (attendance.workHours > OVERTIME_THRESHOLD) {
         attendance.overtimeHours = Number((attendance.workHours - OVERTIME_THRESHOLD).toFixed(2))
+    } else {
+        attendance.overtimeHours = 0
     }
+
     await attendance.save()
-     res.status(200).json({ success: true, message: 'Check-out successful', attendance })
+    res.status(200).json({ success: true, message: 'Check-out successful', attendance })
 })
 
-export const getMyAttendance = asyncHandler(async(req, res) => {
-    if(req.user.role !== "Employee") {
+// Generate dynamic QR Code token for office kiosk (HR/Admin only)
+export const generateQRToken = asyncHandler(async (req, res) => {
+    if (!["Admin", "HR"].includes(req.user.role)) {
+        const error = new Error('unauthorized')
+        error.statusCode = 403
+        throw error
+    }
+
+    const token = JWT.sign(
+        { type: "attendance_qr", generatedBy: req.user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "90s" }
+    )
+
+    res.status(200).json({ success: true, qrToken: token, expiresInSeconds: 90 })
+})
+
+// Check-in via QR Code scan (Employee)
+export const qrCheckIn = asyncHandler(async (req, res) => {
+    if (req.user.role !== "Employee") {
+        const error = new Error('only employees can check in')
+        error.statusCode = 403
+        throw error
+    }
+
+    const { qrToken, location } = req.body
+    if (!qrToken) {
+        const error = new Error('QR token is required')
+        error.statusCode = 400
+        throw error
+    }
+
+    try {
+        const decoded = JWT.verify(qrToken, process.env.JWT_SECRET)
+        if (decoded.type !== "attendance_qr") {
+            const error = new Error('invalid attendance QR token')
+            error.statusCode = 400
+            throw error
+        }
+    } catch {
+        const error = new Error('QR code has expired or is invalid. Please scan again.')
+        error.statusCode = 400
+        throw error
+    }
+
+    const userId = req.user._id
+    const start = getToday()
+    const end = new Date(start)
+    end.setDate(end.getDate() + 1)
+
+    const existing = await Attendance.findOne({ employee: userId, date: { $gte: start, $lt: end } })
+    if (existing) {
+        const error = new Error('already checked in today')
+        error.statusCode = 400
+        throw error
+    }
+
+    const now = new Date()
+    const shift = resolveShift(now)
+    const late = now.getHours() > shift.startHour || (now.getHours() === shift.startHour && now.getMinutes() > shift.startMin)
+
+    const attendance = await Attendance.create({
+        employee: userId,
+        date: start,
+        checkIn: now,
+        shift: shift.shiftEnum,
+        shiftType: shift.type,
+        shiftStart: shift.start,
+        shiftEnd: shift.end,
+        late,
+        checkInMethod: "qr",
+        location: location ? {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            address: location.address || "Office QR Kiosk"
+        } : { address: "Office QR Kiosk" }
+    })
+
+    res.status(201).json({ success: true, message: 'QR check-in successful', attendance })
+})
+
+export const getMyAttendance = asyncHandler(async (req, res) => {
+    if (req.user.role !== "Employee") {
         const error = new Error('only employee can view their attendance')
         error.statusCode = 403
         throw error
@@ -111,35 +246,48 @@ export const getMyAttendance = asyncHandler(async(req, res) => {
     let { month, year } = req.query
     month = parseInt(month)
     year = parseInt(year)
-    if(!month || !year || month < 1 || month > 12 || isNaN(year)){
+    if (!month || !year || month < 1 || month > 12 || isNaN(year)) {
         const error = new Error('invalid month (1-12) and year required')
         error.statusCode = 400
         throw error
     }
     // date range
-    const start = new Date(year, month -1, 1)
-    start.setHours(0,0,0,0)
+    const start = new Date(year, month - 1, 1)
+    start.setHours(0, 0, 0, 0)
     const end = new Date(year, month, 0)
     end.setHours(23, 59, 59, 999)
 
-   const userId  = req.user._id
-    const records = await Attendance.find({employee: userId, date: { $gte: start, $lt: end}}).populate('employee', 'name department').sort({ date: 1 })
-    res.status(200).json({ success: true, message: 'attendance record retrieved', count : records.length, records})
+    const userId = req.user._id
+    const records = await Attendance.find({ employee: userId, date: { $gte: start, $lt: end } })
+        .populate('employee', 'name department')
+        .sort({ date: -1 })
+    res.status(200).json({ success: true, message: 'attendance record retrieved', count: records.length, records })
 })
 
-export const getAllAttendance = asyncHandler(async(req, res) => {
-    if (!["Admin","HR"].includes(req.user.role)) {
+export const getAllAttendance = asyncHandler(async (req, res) => {
+    if (!["Admin", "HR"].includes(req.user.role)) {
         const error = new Error('unauthorized')
         error.statusCode = 403
         throw error
     }
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
-    const records = await Attendance.find().populate('employee', 'name email role department').sort({ date: -1 }).skip((page - 1) * limit).limit(limit).lean()
+    const records = await Attendance.find()
+        .populate('employee', 'name email role department')
+        .sort({ date: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
 
     const total = await Attendance.countDocuments()
 
-    res.status(200).json({success: true, attendance: records, currentPage: page, totalPages: Math.ceil(total/limit), totalRecords: total})
+    res.status(200).json({
+        success: true,
+        attendance: records,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total
+    })
 })
 
 export const markAbsent = asyncHandler(async (req, res) => {
@@ -150,26 +298,26 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
-    if(!['HR','Admin'].includes(req.user.role)) {
+    if (!['HR', 'Admin'].includes(req.user.role)) {
         const error = new Error('unauthorized to mark absent')
         error.statusCode = 403
         throw error
     }
 
     const selectDate = new Date(date)
-    if(isNaN(selectDate)) {
+    if (isNaN(selectDate)) {
         const error = new Error('invalid date')
         error.statusCode = 400
         throw error
     }
-    selectDate.setHours(0,0,0,0)
+    selectDate.setHours(0, 0, 0, 0)
 
     const nextDay = new Date(selectDate)
     nextDay.setDate(nextDay.getDate() + 1)
 
     const existing = await Attendance.findOne({
         employee: employeeId,
-        date: {$gte : selectDate, $lt : nextDay}
+        date: { $gte: selectDate, $lt: nextDay }
     })
 
     if (existing) {
@@ -178,7 +326,7 @@ export const markAbsent = asyncHandler(async (req, res) => {
         throw error
     }
 
-    const attendance = await Attendance.create({employee: employeeId, date: selectDate, status: 'absent'})
+    const attendance = await Attendance.create({ employee: employeeId, date: selectDate, status: 'absent' })
 
-    res.status(201).json({success: true, message: 'marked as absent', attendance})
+    res.status(201).json({ success: true, message: 'marked as absent', attendance })
 })

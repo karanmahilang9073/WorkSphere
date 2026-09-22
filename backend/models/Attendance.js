@@ -7,10 +7,18 @@ const attendanceSchema = new mongoose.Schema({
     checkOut : Date,
     workHours : {type: Number, default: 0},
     status : {type: String, enum: ["present", "absent", "leave"], default : "present"},
-    shift: {type: String, enum: ["general", "night"], default: "general"},
+    shift: {type: String, enum: ["general", "night", "morning", "evening"], default: "general"},
+    shiftType: {type: String, enum: ["Morning", "Evening", "Night", "General"], default: "General"},
     shiftStart: {type: String, default: "10:00", trim : true},
     shiftEnd: {type: String, default: "19:00", trim : true},
     late: {type: Boolean, default: false},
+    overtimeHours: {type: Number, default: 0},
+    checkInMethod: {type: String, enum: ["manual", "qr", "geofence"], default: "manual"},
+    location: {
+        latitude: {type: Number},
+        longitude: {type: Number},
+        address: {type: String}
+    },
     approvedBy : {type: mongoose.Schema.Types.ObjectId, ref : "User"}
 }, {timestamps: true})
 

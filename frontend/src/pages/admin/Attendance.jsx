@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getAllAttendance, getQRToken, getOfficeLocation, updateOfficeLocation } from "../../services/attendanceService";
 import AttendanceCard from "../../components/attendance/AttendanceCard";
 import { toast } from "react-toastify";
 import { analyzeAttendance } from "../../services/AiService";
-import { QrCode, RefreshCw, Sparkles, MapPin, Zap, Navigation, Crosshair, CheckCircle2 } from "lucide-react";
+import { QrCode, RefreshCw, Sparkles, MapPin, Zap, Navigation, Crosshair, CheckCircle2, Timer } from "lucide-react";
 
 function Attendance() {
   const [attendance, setAttendance] = useState([]);
@@ -179,6 +180,12 @@ function Attendance() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <Link
+            to="/admin/shifts"
+            className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl flex items-center gap-2 border border-slate-200/90 shadow-2xs transition-all text-xs">
+            <Timer className="w-4 h-4 text-indigo-600" /> Shift Timings
+          </Link>
+
           <button
             onClick={() => setShowLocModal(true)}
             className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl flex items-center gap-2 border border-slate-200/90 shadow-2xs transition-all text-xs">

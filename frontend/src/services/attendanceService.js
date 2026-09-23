@@ -88,3 +88,21 @@ export const updateOfficeLocation = async (data) => {
         return errorHandler(error);
     }
 }
+
+export const getShifts = async () => {
+    try {
+        const res = await axiosClient.get('/attendance/shifts');
+        return res.data.shifts;
+    } catch (error) {
+        return errorHandler(error);
+    }
+}
+
+export const updateShifts = async (shifts) => {
+    try {
+        const res = await axiosClient.put('/attendance/shifts', { shifts });
+        return res.data;
+    } catch (error) {
+        return errorHandler(error);
+    }
+}

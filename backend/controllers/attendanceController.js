@@ -1,78 +1,128 @@
 import asyncHandler from "../middlewares/asyncHandler.js"
 import Attendance from "../models/Attendance.js"
 import OfficeLocation from "../models/OfficeLocation.js"
+import ShiftConfig from "../models/ShiftConfig.js"
 import JWT from "jsonwebtoken"
 
-const getActiveOfficeLocation = async () => {
-    const customLoc = await OfficeLocation.findOne().sort({ updatedAt: -1 })
-    if (customLoc) {
-        return {
-            latitude: customLoc.latitude,
-            longitude: customLoc.longitude,
-            radiusMeters: customLoc.radiusMeters || 500,
-            address: customLoc.address || "Corporate Office",
-            name: customLoc.name || "Main Office"
+export const DEFAULT_SHIFTS = [
+    {
+        shiftEnum: "morning",
+        shiftType: "Morning",
+        name: "Morning Shift",
+        startTime: "08:00",
+        endTime: "17:00",
+        startHour: 8,
+        startMin: 0,
+        endHour: 17,
+        endMin: 0,
+        graceMinutes: 15,
+        windowStartHour: 6,
+        windowEndHour: 12,
+        isActive: true
+    },
+    {
+        shiftEnum: "general",
+        shiftType: "General",
+        name: "General Shift",
+        startTime: "10:00",
+        endTime: "19:00",
+        startHour: 10,
+        startMin: 0,
+        endHour: 19,
+        endMin: 0,
+        graceMinutes: 15,
+        windowStartHour: 12,
+        windowEndHour: 17,
+        isActive: true
+    },
+    {
+        shiftEnum: "evening",
+        shiftType: "Evening",
+        name: "Evening Shift",
+        startTime: "14:00",
+        endTime: "23:00",
+        startHour: 14,
+        startMin: 0,
+        endHour: 23,
+        endMin: 0,
+        graceMinutes: 15,
+        windowStartHour: 17,
+        windowEndHour: 22,
+        isActive: true
+    },
+    {
+        shiftEnum: "night",
+        shiftType: "Night",
+        name: "Night Shift",
+        startTime: "22:00",
+        endTime: "06:00",
+        startHour: 22,
+        startMin: 0,
+        endHour: 6,
+        endMin: 0,
+        graceMinutes: 15,
+        windowStartHour: 22,
+        windowEndHour: 6,
+        isActive: true
+    }
+]
+
+export const getActiveShifts = async () => {
+    try {
+        let shifts = await ShiftConfig.find().sort({ windowStartHour: 1 })
+        if (!shifts || shifts.length === 0) {
+            await ShiftConfig.insertMany(DEFAULT_SHIFTS)
+            shifts = await ShiftConfig.find().sort({ windowStartHour: 1 })
+        }
+        return shifts
+    } catch (e) {
+        console.error("Error fetching shifts:", e)
+        return DEFAULT_SHIFTS
+    }
+}
+
+const isCheckInLate = (localHour, localMin, shift) => {
+    const shiftStartTotalMins = (shift.startHour ?? 9) * 60 + (shift.startMin ?? 0)
+    const grace = typeof shift.graceMinutes === 'number' ? shift.graceMinutes : 0
+    const lateThresholdMins = shiftStartTotalMins + grace
+
+    const checkInMins = localHour * 60 + localMin
+
+    // If shift start is higher than end, e.g. Night shift (22:00 to 06:00)
+    if (shift.startHour > shift.endHour) {
+        if (localHour >= (shift.windowStartHour ?? 22)) {
+            return checkInMins > lateThresholdMins
+        } else {
+            // Check-in is after midnight
+            return true
         }
     }
-    const envLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null
-    const envLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null
-    const envRadius = process.env.OFFICE_RADIUS_METERS ? parseFloat(process.env.OFFICE_RADIUS_METERS) : 500
-    if (envLat !== null && envLng !== null) {
-        return {
-            latitude: envLat,
-            longitude: envLng,
-            radiusMeters: envRadius,
-            address: "Office Geo-Fence",
-            name: "Main Office"
-        }
-    }
-    return null
+
+    return checkInMins > lateThresholdMins
 }
 
-const getToday = () => {
-    const start = new Date()
-    start.setHours(0, 0, 0, 0)
-    return start
-}
-
-const calculateHours = (checkIn, checkOut) => {
-    const diff = checkOut - checkIn
-    return diff / (1000 * 60 * 60)
-}
-
-// Haversine formula to compute distance in meters
-const calculateDistanceMeters = (lat1, lon1, lat2, lon2) => {
-    const R = 6371e3 // Earth radius in meters
-    const phi1 = (lat1 * Math.PI) / 180
-    const phi2 = (lat2 * Math.PI) / 180
-    const deltaPhi = ((lat2 - lat1) * Math.PI) / 180
-    const deltaLambda = ((lon2 - lon1) * Math.PI) / 180
-
-    const a =
-        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-        Math.cos(phi1) * Math.cos(phi2) *
-        Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2)
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-    return R * c
-}
-
-// Dynamic Shift Helper
-const resolveShift = (now, timezoneOffset) => {
+// Dynamic Shift Helper using configured shifts from DB
+const resolveShift = (now, timezoneOffset, shifts = DEFAULT_SHIFTS) => {
     let d = now
     if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
         d = new Date(now.getTime() - timezoneOffset * 60000)
     }
     const hour = typeof timezoneOffset === 'number' ? d.getUTCHours() : d.getHours()
-    if (hour >= 6 && hour < 12) {
-        return { type: "Morning", start: "08:00", startHour: 8, startMin: 0, end: "17:00", shiftEnum: "morning" }
-    } else if (hour >= 12 && hour < 17) {
-        return { type: "General", start: "10:00", startHour: 10, startMin: 0, end: "19:00", shiftEnum: "general" }
-    } else if (hour >= 17 && hour < 22) {
-        return { type: "Evening", start: "14:00", startHour: 14, startMin: 0, end: "23:00", shiftEnum: "evening" }
-    } else {
-        return { type: "Night", start: "22:00", startHour: 22, startMin: 0, end: "06:00", shiftEnum: "night" }
+    const activeShifts = shifts && shifts.length ? shifts.filter(s => s.isActive !== false) : DEFAULT_SHIFTS
+
+    for (const s of activeShifts) {
+        if (s.windowStartHour <= s.windowEndHour) {
+            if (hour >= s.windowStartHour && hour < s.windowEndHour) {
+                return s
+            }
+        } else {
+            // Crosses midnight (e.g. 22:00 to 06:00)
+            if (hour >= s.windowStartHour || hour < s.windowEndHour) {
+                return s
+            }
+        }
     }
+    return activeShifts.find(s => s.shiftEnum === 'general') || activeShifts[0] || DEFAULT_SHIFTS[1]
 }
 
 export const checkIn = asyncHandler(async (req, res) => {
@@ -114,23 +164,24 @@ export const checkIn = asyncHandler(async (req, res) => {
     }
 
     const now = new Date()
-    const shift = resolveShift(now, timezoneOffset)
+    const shifts = await getActiveShifts()
+    const shift = resolveShift(now, timezoneOffset, shifts)
     let localDate = now
     if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
         localDate = new Date(now.getTime() - timezoneOffset * 60000)
     }
     const localHour = typeof timezoneOffset === 'number' ? localDate.getUTCHours() : localDate.getHours()
     const localMin = typeof timezoneOffset === 'number' ? localDate.getUTCMinutes() : localDate.getMinutes()
-    const late = localHour > shift.startHour || (localHour === shift.startHour && localMin > shift.startMin)
+    const late = isCheckInLate(localHour, localMin, shift)
 
     const attendance = await Attendance.create({
         employee: userId,
         date: start,
         checkIn: now,
         shift: shift.shiftEnum,
-        shiftType: shift.type,
-        shiftStart: shift.start,
-        shiftEnd: shift.end,
+        shiftType: shift.shiftType || shift.type,
+        shiftStart: shift.startTime || shift.start,
+        shiftEnd: shift.endTime || shift.end,
         late,
         checkInMethod: "geofence",
         location: {
@@ -258,23 +309,24 @@ export const qrCheckIn = asyncHandler(async (req, res) => {
     }
 
     const now = new Date()
-    const shift = resolveShift(now, timezoneOffset)
+    const shifts = await getActiveShifts()
+    const shift = resolveShift(now, timezoneOffset, shifts)
     let localDate = now
     if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
         localDate = new Date(now.getTime() - timezoneOffset * 60000)
     }
     const localHour = typeof timezoneOffset === 'number' ? localDate.getUTCHours() : localDate.getHours()
     const localMin = typeof timezoneOffset === 'number' ? localDate.getUTCMinutes() : localDate.getMinutes()
-    const late = localHour > shift.startHour || (localHour === shift.startHour && localMin > shift.startMin)
+    const late = isCheckInLate(localHour, localMin, shift)
 
     const attendance = await Attendance.create({
         employee: userId,
         date: start,
         checkIn: now,
         shift: shift.shiftEnum,
-        shiftType: shift.type,
-        shiftStart: shift.start,
-        shiftEnd: shift.end,
+        shiftType: shift.shiftType || shift.type,
+        shiftStart: shift.startTime || shift.start,
+        shiftEnd: shift.endTime || shift.end,
         late,
         checkInMethod: "qr",
         location: location ? {
@@ -454,3 +506,75 @@ export const updateOfficeLocationConfig = asyncHandler(async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Office location updated successfully', office })
 })
+
+// Get Shift Configurations (Authenticated users)
+export const getShiftConfigs = asyncHandler(async (req, res) => {
+    const shifts = await getActiveShifts()
+    res.status(200).json({ success: true, shifts })
+})
+
+// Update Shift Configurations (Admin/HR only)
+export const updateShiftConfigs = asyncHandler(async (req, res) => {
+    if (!["Admin", "HR"].includes(req.user.role)) {
+        const error = new Error('unauthorized')
+        error.statusCode = 403
+        throw error
+    }
+
+    const { shifts } = req.body
+    if (!Array.isArray(shifts) || shifts.length === 0) {
+        const error = new Error('shifts array is required')
+        error.statusCode = 400
+        throw error
+    }
+
+    const updatedShifts = []
+    for (const item of shifts) {
+        if (!item.shiftEnum) continue
+
+        let startHour = item.startHour
+        let startMin = item.startMin
+        if (item.startTime && item.startTime.includes(':')) {
+            const [h, m] = item.startTime.split(':').map(Number)
+            startHour = isNaN(h) ? startHour : h
+            startMin = isNaN(m) ? 0 : m
+        }
+
+        let endHour = item.endHour
+        let endMin = item.endMin
+        if (item.endTime && item.endTime.includes(':')) {
+            const [h, m] = item.endTime.split(':').map(Number)
+            endHour = isNaN(h) ? endHour : h
+            endMin = isNaN(m) ? 0 : m
+        }
+
+        const updateData = {
+            startTime: item.startTime,
+            endTime: item.endTime,
+            startHour,
+            startMin,
+            endHour,
+            endMin,
+            graceMinutes: item.graceMinutes !== undefined ? parseInt(item.graceMinutes) : 15,
+            windowStartHour: item.windowStartHour !== undefined ? parseInt(item.windowStartHour) : undefined,
+            windowEndHour: item.windowEndHour !== undefined ? parseInt(item.windowEndHour) : undefined,
+            isActive: item.isActive !== undefined ? item.isActive : true,
+            updatedBy: req.user._id
+        }
+        if (item.name) updateData.name = item.name
+        if (item.shiftType) updateData.shiftType = item.shiftType
+
+        // Filter out undefined
+        Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key])
+
+        const updated = await ShiftConfig.findOneAndUpdate(
+            { shiftEnum: item.shiftEnum },
+            { $set: updateData },
+            { new: true, upsert: true }
+        )
+        updatedShifts.push(updated)
+    }
+
+    res.status(200).json({ success: true, message: 'Shift timings updated successfully', shifts: updatedShifts })
+})
+

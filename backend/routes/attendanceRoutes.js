@@ -9,7 +9,9 @@ import {
     generateQRToken,
     qrCheckIn,
     getOfficeLocationConfig,
-    updateOfficeLocationConfig
+    updateOfficeLocationConfig,
+    getShiftConfigs,
+    updateShiftConfigs
 } from '../controllers/attendanceController.js'
 
 const attendanceRouter = express.Router()
@@ -23,5 +25,7 @@ attendanceRouter.post('/qr-token', authMiddleware, generateQRToken)
 attendanceRouter.post('/qr-check-in', authMiddleware, qrCheckIn)
 attendanceRouter.get('/office-location', authMiddleware, getOfficeLocationConfig)
 attendanceRouter.put('/office-location', authMiddleware, updateOfficeLocationConfig)
+attendanceRouter.get('/shifts', authMiddleware, getShiftConfigs)
+attendanceRouter.put('/shifts', authMiddleware, updateShiftConfigs)
 
 export default attendanceRouter

@@ -10,6 +10,7 @@ import leaveRouter from './routes/leaveRoutes.js'
 import attendanceRouter from './routes/attendanceRoutes.js'
 import aiRouter from './routes/aiRoutes.js'
 import notificationRouter from './routes/notificationRoutes.js'
+import analyticsRouter from './routes/analyticsRoutes.js'
 import cors from 'cors'
 import http from 'http'
 import { initSocket } from './config/socket.js'
@@ -47,6 +48,7 @@ app.use('/api/leaves', leaveRouter)
 app.use('/api/attendance', attendanceRouter)
 app.use('/api/notifications', notificationRouter)
 app.use('/api/ai', aiRouter)
+app.use('/api/analytics', analyticsRouter)
 
 //socket initialization
 export const io = initSocket(server)

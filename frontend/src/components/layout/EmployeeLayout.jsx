@@ -40,6 +40,7 @@ export default function EmployeeLayout() {
 
   // Get current page name
   const getCurrentPageTitle = () => {
+    if (location.pathname === "/employee/profile") return "My Profile"
     const active = navItems.find(item => 
       item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to) && item.to !== "/employee"
     )

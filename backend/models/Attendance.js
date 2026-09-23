@@ -6,7 +6,7 @@ const attendanceSchema = new mongoose.Schema({
     checkIn : Date,
     checkOut : Date,
     workHours : {type: Number, default: 0},
-    status : {type: String, enum: ["present", "absent", "leave"], default : "present"},
+    status : {type: String, enum: ["present", "absent", "leave", "half-day", "incomplete"], default : "present"},
     shift: {type: String, enum: ["general", "night", "morning", "evening"], default: "general"},
     shiftType: {type: String, enum: ["Morning", "Evening", "Night", "General"], default: "General"},
     shiftStart: {type: String, default: "10:00", trim : true},
@@ -30,11 +30,11 @@ attendanceSchema.pre("save", function(){
     if(this.checkIn && this.checkOut){
         const diff = this.checkOut - this.checkIn
         this.workHours = Math.round((diff / (1000 * 60 * 60)) * 100) / 100
-    }
-    // late check
-    if(this.checkIn) {
-        const checkInTime = this.checkIn.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false})
-        this.late = checkInTime > this.shiftStart
+        if (this.workHours < 1 && this.status !== "leave" && this.status !== "absent") {
+            this.status = "incomplete"
+        } else if (this.workHours < 4 && this.status !== "leave" && this.status !== "absent") {
+            this.status = "half-day"
+        }
     }
 })
 

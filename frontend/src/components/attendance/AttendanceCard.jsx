@@ -33,6 +33,8 @@ function AttendanceCard({ attendance, onAnalyze }) {
 
   const isPresent = attendance.status?.toLowerCase() === 'present'
   const isLeave = attendance.status?.toLowerCase() === 'leave'
+  const isHalfDay = attendance.status?.toLowerCase() === 'half-day'
+  const isIncomplete = attendance.status?.toLowerCase() === 'incomplete'
 
   return (
     <div className='bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between'>
@@ -56,9 +58,13 @@ function AttendanceCard({ attendance, onAnalyze }) {
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' 
                 : isLeave 
                 ? 'bg-blue-50 text-blue-700 border border-blue-200/70' 
+                : isHalfDay
+                ? 'bg-amber-50 text-amber-700 border border-amber-200/70'
+                : isIncomplete
+                ? 'bg-orange-50 text-orange-700 border border-orange-200/70'
                 : 'bg-rose-50 text-rose-700 border border-rose-200/70'
             }`}>
-              {attendance.status?.toUpperCase()}
+              {attendance.status?.replace('-', ' ')?.toUpperCase()}
             </span>
           </div>
         </div>

@@ -5,9 +5,9 @@ const errorHandler = (error) => {
     throw error?.response?.data || { message: 'something went wrong' };
 }
 
-export const checkIn = async (location, checkInMethod = "manual") => {
+export const checkIn = async (location, checkInMethod = "manual", timezoneOffset = new Date().getTimezoneOffset()) => {
     try {
-        const res = await axiosClient.post('/attendance/check-in', { location, checkInMethod });
+        const res = await axiosClient.post('/attendance/check-in', { location, checkInMethod, timezoneOffset });
         return res.data;
     } catch (error) {
         return errorHandler(error);
@@ -53,9 +53,9 @@ export const getQRToken = async () => {
     }
 }
 
-export const checkInWithQR = async (qrToken, location) => {
+export const checkInWithQR = async (qrToken, location, timezoneOffset = new Date().getTimezoneOffset()) => {
     try {
-        const res = await axiosClient.post('/attendance/qr-check-in', { qrToken, location });
+        const res = await axiosClient.post('/attendance/qr-check-in', { qrToken, location, timezoneOffset });
         return res.data;
     } catch (error) {
         return errorHandler(error);

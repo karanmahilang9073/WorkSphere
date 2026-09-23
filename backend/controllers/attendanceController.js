@@ -31,8 +31,12 @@ const calculateDistanceMeters = (lat1, lon1, lat2, lon2) => {
 }
 
 // Dynamic Shift Helper
-const resolveShift = (now) => {
-    const hour = now.getHours()
+const resolveShift = (now, timezoneOffset) => {
+    let d = now
+    if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
+        d = new Date(now.getTime() - timezoneOffset * 60000)
+    }
+    const hour = typeof timezoneOffset === 'number' ? d.getUTCHours() : d.getHours()
     if (hour >= 6 && hour < 12) {
         return { type: "Morning", start: "08:00", startHour: 8, startMin: 0, end: "17:00", shiftEnum: "morning" }
     } else if (hour >= 12 && hour < 17) {
@@ -52,7 +56,7 @@ export const checkIn = asyncHandler(async (req, res) => {
     }
 
     const userId = req.user._id
-    const { location } = req.body
+    const { location, timezoneOffset } = req.body
 
     if (!location?.latitude || !location?.longitude) {
         const error = new Error('GPS location is required for check-in. Please enable location access or scan the Office QR Code.')
@@ -86,8 +90,14 @@ export const checkIn = asyncHandler(async (req, res) => {
     }
 
     const now = new Date()
-    const shift = resolveShift(now)
-    const late = now.getHours() > shift.startHour || (now.getHours() === shift.startHour && now.getMinutes() > shift.startMin)
+    const shift = resolveShift(now, timezoneOffset)
+    let localDate = now
+    if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
+        localDate = new Date(now.getTime() - timezoneOffset * 60000)
+    }
+    const localHour = typeof timezoneOffset === 'number' ? localDate.getUTCHours() : localDate.getHours()
+    const localMin = typeof timezoneOffset === 'number' ? localDate.getUTCMinutes() : localDate.getMinutes()
+    const late = localHour > shift.startHour || (localHour === shift.startHour && localMin > shift.startMin)
 
     const attendance = await Attendance.create({
         employee: userId,
@@ -145,6 +155,15 @@ export const checkout = asyncHandler(async (req, res) => {
     const hours = calculateHours(attendance.checkIn, now)
     attendance.workHours = Number(hours.toFixed(2))
 
+    // Determine status based on duration
+    if (attendance.workHours < 1) {
+        attendance.status = "incomplete"
+    } else if (attendance.workHours < 4) {
+        attendance.status = "half-day"
+    } else {
+        attendance.status = "present"
+    }
+
     // Overtime calculation (Standard 8 working hours threshold)
     const OVERTIME_THRESHOLD = 8
     if (attendance.workHours > OVERTIME_THRESHOLD) {
@@ -182,7 +201,7 @@ export const qrCheckIn = asyncHandler(async (req, res) => {
         throw error
     }
 
-    const { qrToken, location } = req.body
+    const { qrToken, location, timezoneOffset } = req.body
     if (!qrToken) {
         const error = new Error('QR token is required')
         error.statusCode = 400
@@ -215,8 +234,14 @@ export const qrCheckIn = asyncHandler(async (req, res) => {
     }
 
     const now = new Date()
-    const shift = resolveShift(now)
-    const late = now.getHours() > shift.startHour || (now.getHours() === shift.startHour && now.getMinutes() > shift.startMin)
+    const shift = resolveShift(now, timezoneOffset)
+    let localDate = now
+    if (typeof timezoneOffset === 'number' && !isNaN(timezoneOffset)) {
+        localDate = new Date(now.getTime() - timezoneOffset * 60000)
+    }
+    const localHour = typeof timezoneOffset === 'number' ? localDate.getUTCHours() : localDate.getHours()
+    const localMin = typeof timezoneOffset === 'number' ? localDate.getUTCMinutes() : localDate.getMinutes()
+    const late = localHour > shift.startHour || (localHour === shift.startHour && localMin > shift.startMin)
 
     const attendance = await Attendance.create({
         employee: userId,
@@ -262,6 +287,36 @@ export const getMyAttendance = asyncHandler(async (req, res) => {
     const records = await Attendance.find({ employee: userId, date: { $gte: start, $lt: end } })
         .populate('employee', 'name department')
         .sort({ date: -1 })
+
+    // Auto-heal historical records for consistent status and shift classification
+    for (const r of records) {
+        let changed = false
+        if (r.checkOut && r.status === 'present') {
+            if (r.workHours < 1) {
+                r.status = 'incomplete'
+                changed = true
+            } else if (r.workHours < 4) {
+                r.status = 'half-day'
+                changed = true
+            }
+        }
+        if (r.checkIn && r.shiftType === 'Night') {
+            const checkInDate = new Date(r.checkIn)
+            // If checkIn was during morning IST (06:00 to 12:00)
+            const istHours = (checkInDate.getUTCHours() + 5 + Math.floor((checkInDate.getUTCMinutes() + 30) / 60)) % 24
+            if (istHours >= 6 && istHours < 12) {
+                r.shiftType = 'Morning'
+                r.shift = 'morning'
+                r.shiftStart = '08:00'
+                r.shiftEnd = '17:00'
+                changed = true
+            }
+        }
+        if (changed) {
+            await r.save()
+        }
+    }
+
     res.status(200).json({ success: true, message: 'attendance record retrieved', count: records.length, records })
 })
 

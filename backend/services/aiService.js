@@ -7,15 +7,23 @@ const groq = new Groq({
 })
 
 
-export const aiResponse = async(prompt) => {
+const DEFAULT_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'
+
+export const aiResponse = async(prompt, systemPrompt = null) => {
     try {
         if(!process.env.GROQ_API_KEY){
             throw new Error('GROQ_API_KEY not configured')
         }
         
+        const messages = []
+        if (systemPrompt) {
+            messages.push({ role: 'system', content: systemPrompt })
+        }
+        messages.push({ role: 'user', content: prompt })
+
         const res = await groq.chat.completions.create({
-            model : 'llama-3.1-8b-instant',
-            messages : [{role: 'user', content : prompt}]
+            model : DEFAULT_MODEL,
+            messages
         })
 
         if(!res.choices || !res.choices[0]) {

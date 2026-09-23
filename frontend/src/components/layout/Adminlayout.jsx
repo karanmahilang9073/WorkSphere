@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { AuthContext } from '../../context/AuthContext'
 import { useNavigate, NavLink, Outlet, Link } from 'react-router-dom'
-import {LayoutDashboard, Users, Calendar, Clock, ListTodo, DollarSign, BarChart3, LogOut, User} from 'lucide-react'
+import {LayoutDashboard, Users, Calendar, Clock, ListTodo, DollarSign, BarChart3, LogOut, User, MapPin} from 'lucide-react'
 
 export default function AdminLayout() {
   const { user,  logout } = useContext(AuthContext)
@@ -15,7 +15,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-3 h-screen fixed left-0 top-0">
+      <aside className="w-64 bg-gray-900 text-white p-3 h-screen fixed left-0 top-0 overflow-y-auto">
         <h2 className="text-2xl font-bold mb-8">
           WorkSphere, {user?.role}
         </h2>
@@ -24,6 +24,7 @@ export default function AdminLayout() {
           <NavLink to="/admin" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}>< LayoutDashboard size={20}/>Dashboard</NavLink>
           <NavLink to="/admin/employees" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><Users size={20}/>Employees</NavLink>
           <NavLink to="/admin/attendance" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><Clock size={20}/>Attendance</NavLink>
+          <NavLink to="/admin/geo-fence" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><MapPin size={20}/>Geo-Fence Settings</NavLink>
           <NavLink to="/admin/leaves" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><Calendar/>Leaves</NavLink>
           <NavLink to="/admin/tasks" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><ListTodo/>Tasks</NavLink>
           <NavLink to="/admin/compensation" className={({isActive}) => `block p-2 rounded ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'} flex gap-2`}><DollarSign/>Compensation</NavLink>

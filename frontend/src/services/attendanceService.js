@@ -70,3 +70,21 @@ export const markAbsent = async (employeeId, date) => {
         return errorHandler(error);
     }
 }
+
+export const getOfficeLocation = async () => {
+    try {
+        const res = await axiosClient.get('/attendance/office-location');
+        return res.data.office;
+    } catch (error) {
+        return errorHandler(error);
+    }
+}
+
+export const updateOfficeLocation = async (data) => {
+    try {
+        const res = await axiosClient.put('/attendance/office-location', data);
+        return res.data;
+    } catch (error) {
+        return errorHandler(error);
+    }
+}

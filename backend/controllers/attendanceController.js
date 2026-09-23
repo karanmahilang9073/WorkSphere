@@ -1,6 +1,33 @@
 import asyncHandler from "../middlewares/asyncHandler.js"
 import Attendance from "../models/Attendance.js"
+import OfficeLocation from "../models/OfficeLocation.js"
 import JWT from "jsonwebtoken"
+
+const getActiveOfficeLocation = async () => {
+    const customLoc = await OfficeLocation.findOne().sort({ updatedAt: -1 })
+    if (customLoc) {
+        return {
+            latitude: customLoc.latitude,
+            longitude: customLoc.longitude,
+            radiusMeters: customLoc.radiusMeters || 500,
+            address: customLoc.address || "Corporate Office",
+            name: customLoc.name || "Main Office"
+        }
+    }
+    const envLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null
+    const envLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null
+    const envRadius = process.env.OFFICE_RADIUS_METERS ? parseFloat(process.env.OFFICE_RADIUS_METERS) : 500
+    if (envLat !== null && envLng !== null) {
+        return {
+            latitude: envLat,
+            longitude: envLng,
+            radiusMeters: envRadius,
+            address: "Office Geo-Fence",
+            name: "Main Office"
+        }
+    }
+    return null
+}
 
 const getToday = () => {
     const start = new Date()
@@ -49,7 +76,7 @@ const resolveShift = (now, timezoneOffset) => {
 }
 
 export const checkIn = asyncHandler(async (req, res) => {
-    if (req.user.role !== "Employee") {
+    if (req.user.role?.toLowerCase() !== "employee") {
         const error = new Error('only employees can checkIn')
         error.statusCode = 403
         throw error
@@ -64,16 +91,13 @@ export const checkIn = asyncHandler(async (req, res) => {
         throw error
     }
 
-    // Geo-fencing verification if office coordinates configured
-    const officeLat = process.env.OFFICE_LAT ? parseFloat(process.env.OFFICE_LAT) : null
-    const officeLng = process.env.OFFICE_LNG ? parseFloat(process.env.OFFICE_LNG) : null
-    const maxRadius = process.env.OFFICE_RADIUS_METERS ? parseFloat(process.env.OFFICE_RADIUS_METERS) : 500
-
-    if (officeLat !== null && officeLng !== null) {
-        const distance = calculateDistanceMeters(location.latitude, location.longitude, officeLat, officeLng)
-        if (distance > maxRadius) {
-            const error = new Error(`You are ${Math.round(distance)}m away from the office. Allowed radius is ${maxRadius}m`)
-            error.statusCode = 403
+    // Dynamic Geo-fencing verification from Admin settings or env fallback
+    const office = await getActiveOfficeLocation()
+    if (office && office.latitude !== null && office.longitude !== null) {
+        const distance = calculateDistanceMeters(location.latitude, location.longitude, office.latitude, office.longitude)
+        if (distance > office.radiusMeters) {
+            const error = new Error(`Out of office range (${Math.round(distance)}m away from ${office.name}). Allowed radius is ${office.radiusMeters}m. Please use Office QR Code scan.`)
+            error.statusCode = 400
             throw error
         }
     }
@@ -120,7 +144,7 @@ export const checkIn = asyncHandler(async (req, res) => {
 })
 
 export const checkout = asyncHandler(async (req, res) => {
-    if (req.user.role !== "Employee") {
+    if (req.user.role?.toLowerCase() !== "employee") {
         const error = new Error('only employee can check out')
         error.statusCode = 403
         throw error
@@ -195,7 +219,7 @@ export const generateQRToken = asyncHandler(async (req, res) => {
 
 // Check-in via QR Code scan (Employee)
 export const qrCheckIn = asyncHandler(async (req, res) => {
-    if (req.user.role !== "Employee") {
+    if (req.user.role?.toLowerCase() !== "employee") {
         const error = new Error('only employees can check in')
         error.statusCode = 403
         throw error
@@ -385,4 +409,48 @@ export const markAbsent = asyncHandler(async (req, res) => {
     const attendance = await Attendance.create({ employee: employeeId, date: selectDate, status: 'absent' })
 
     res.status(201).json({ success: true, message: 'marked as absent', attendance })
+})
+
+// Get Office Location Config (Authenticated users)
+export const getOfficeLocationConfig = asyncHandler(async (req, res) => {
+    const office = await getActiveOfficeLocation()
+    res.status(200).json({ success: true, office: office || null })
+})
+
+// Update Office Location Config (Admin/HR only)
+export const updateOfficeLocationConfig = asyncHandler(async (req, res) => {
+    if (!["Admin", "HR"].includes(req.user.role)) {
+        const error = new Error('unauthorized')
+        error.statusCode = 403
+        throw error
+    }
+
+    const { latitude, longitude, radiusMeters, address, name } = req.body
+    if (latitude === undefined || longitude === undefined) {
+        const error = new Error('Latitude and Longitude are required')
+        error.statusCode = 400
+        throw error
+    }
+
+    let office = await OfficeLocation.findOne()
+    if (office) {
+        office.latitude = parseFloat(latitude)
+        office.longitude = parseFloat(longitude)
+        if (radiusMeters) office.radiusMeters = parseFloat(radiusMeters)
+        if (address) office.address = address
+        if (name) office.name = name
+        office.updatedBy = req.user._id
+        await office.save()
+    } else {
+        office = await OfficeLocation.create({
+            name: name || "Main Office",
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+            radiusMeters: radiusMeters ? parseFloat(radiusMeters) : 500,
+            address: address || "Corporate Office",
+            updatedBy: req.user._id
+        })
+    }
+
+    res.status(200).json({ success: true, message: 'Office location updated successfully', office })
 })

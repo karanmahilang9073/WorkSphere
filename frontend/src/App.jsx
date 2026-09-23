@@ -30,6 +30,7 @@ import Analytics from './pages/admin/Analytics'
 import Profile from './pages/admin/Profile'
 import EmpAnalytics from './pages/admin/EmpAnalytics'
 import CreateUser from './pages/admin/CreateUser'
+import GeoFenceSettings from './pages/admin/GeoFenceSettings'
 
 
 
@@ -73,6 +74,7 @@ export default function App() {
           <Route path='/admin/profile' element={<Profile/>} />
           <Route path='/admin/employee-analytics/:employeeId' element={<EmpAnalytics/>} />
           <Route path='/admin/create-user' element={<CreateUser/>} />
+          <Route path='/admin/geo-fence' element={<GeoFenceSettings />} />
 
       </Route>
 

@@ -56,7 +56,7 @@ axiosClient.interceptors.response.use(
         }
 
         if(error.response?.status === 403){
-            window.location.href = '/unauthorized'
+            toast.error(error.response?.data?.message || 'Access Denied: You do not have permission.')
         }
         if (error.response?.status === 401 && window.location.pathname !== '/login') {
             localStorage.removeItem("token");

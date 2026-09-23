@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { getAllAttendance, getQRToken } from "../../services/attendanceService";
+import { getAllAttendance, getQRToken, getOfficeLocation, updateOfficeLocation } from "../../services/attendanceService";
 import AttendanceCard from "../../components/attendance/AttendanceCard";
 import { toast } from "react-toastify";
 import { analyzeAttendance } from "../../services/AiService";
-import { QrCode, RefreshCw, Sparkles, MapPin, Zap } from "lucide-react";
+import { QrCode, RefreshCw, Sparkles, MapPin, Zap, Navigation, Crosshair, CheckCircle2 } from "lucide-react";
 
 function Attendance() {
   const [attendance, setAttendance] = useState([]);
@@ -20,6 +20,18 @@ function Attendance() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrToken, setQrToken] = useState("");
   const [qrSecondsLeft, setQrSecondsLeft] = useState(0);
+
+  // Office Location Modal
+  const [showLocModal, setShowLocModal] = useState(false);
+  const [locData, setLocData] = useState({
+    name: "Main Office",
+    latitude: "",
+    longitude: "",
+    radiusMeters: 500,
+    address: "Corporate Office"
+  });
+  const [locLoading, setLocLoading] = useState(false);
+  const [detectingGps, setDetectingGps] = useState(false);
 
   const fetchAttendance = async () => {
     setLoading(true);
@@ -87,6 +99,73 @@ function Attendance() {
     }
   };
 
+  const fetchCurrentOfficeLocation = async () => {
+    try {
+      const data = await getOfficeLocation();
+      if (data) {
+        setLocData({
+          name: data.name || "Main Office",
+          latitude: data.latitude !== undefined ? data.latitude : "",
+          longitude: data.longitude !== undefined ? data.longitude : "",
+          radiusMeters: data.radiusMeters || 500,
+          address: data.address || "Corporate Office"
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load office location", err);
+    }
+  };
+
+  useEffect(() => {
+    if (showLocModal) {
+      fetchCurrentOfficeLocation();
+    }
+  }, [showLocModal]);
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocData(prev => ({
+          ...prev,
+          latitude: Number(pos.coords.latitude.toFixed(6)),
+          longitude: Number(pos.coords.longitude.toFixed(6))
+        }));
+        setDetectingGps(false);
+        toast.success("Current GPS coordinates captured!");
+      },
+      (err) => {
+        console.error("GPS error", err);
+        setDetectingGps(false);
+        toast.error("Failed to detect GPS location. Please allow browser location access.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleSaveLocation = async (e) => {
+    e.preventDefault();
+    if (locData.latitude === "" || locData.longitude === "") {
+      toast.error("Latitude and Longitude are required");
+      return;
+    }
+    setLocLoading(true);
+    try {
+      await updateOfficeLocation(locData);
+      toast.success("Office Geo-Fence location updated successfully!");
+      setShowLocModal(false);
+    } catch (err) {
+      console.error("Failed to update office location", err);
+      toast.error(err?.message || "Failed to update office location");
+    } finally {
+      setLocLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       
@@ -99,11 +178,19 @@ function Attendance() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowQRModal(true)}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl flex items-center gap-2 shadow-sm transition-colors text-sm">
-          <QrCode className="w-4 h-4" /> Launch Live Office QR Kiosk
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={() => setShowLocModal(true)}
+            className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl flex items-center gap-2 border border-slate-200/90 shadow-2xs transition-all text-xs">
+            <MapPin className="w-4 h-4 text-indigo-600" /> Office Geo-Fence Settings
+          </button>
+
+          <button
+            onClick={() => setShowQRModal(true)}
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl flex items-center gap-2 shadow-sm transition-colors text-sm">
+            <QrCode className="w-4 h-4" /> Launch Live Office QR Kiosk
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -229,6 +316,125 @@ function Attendance() {
               className="w-full py-2.5 bg-gray-900 hover:bg-black text-white font-medium rounded-xl text-sm transition-colors">
               Close Kiosk Screen
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Office Geo-Fence Settings Modal */}
+      {showLocModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 border border-slate-100">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">Office Geo-Fence Settings</h3>
+                  <p className="text-[11px] text-slate-400">Configure coordinates & allowed check-in radius</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowLocModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold">
+                ×
+              </button>
+            </div>
+
+            {/* Auto GPS Detection Button */}
+            <button
+              type="button"
+              onClick={handleUseCurrentLocation}
+              disabled={detectingGps}
+              className="w-full py-2.5 px-3 bg-indigo-50 hover:bg-indigo-100/80 text-indigo-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 border border-indigo-200/80 transition-all shadow-2xs">
+              <Crosshair className={`w-4 h-4 ${detectingGps ? 'animate-spin' : ''}`} />
+              {detectingGps ? "Detecting GPS location..." : "📍 Set to My Current GPS Location"}
+            </button>
+
+            <form onSubmit={handleSaveLocation} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-700">Latitude *</label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={locData.latitude}
+                    onChange={(e) => setLocData({ ...locData, latitude: e.target.value })}
+                    placeholder="e.g. 21.251382"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-700">Longitude *</label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={locData.longitude}
+                    onChange={(e) => setLocData({ ...locData, longitude: e.target.value })}
+                    placeholder="e.g. 81.629639"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-700">Allowed Radius (Meters)</label>
+                <div className="flex gap-2">
+                  {[200, 500, 1000, 2000].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setLocData({ ...locData, radiusMeters: r })}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        Number(locData.radiusMeters) === r
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}>
+                      {r >= 1000 ? `${r / 1000}km` : `${r}m`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-700">Office / Branch Name</label>
+                <input
+                  type="text"
+                  value={locData.name}
+                  onChange={(e) => setLocData({ ...locData, name: e.target.value })}
+                  placeholder="e.g. Headquarters / Main Office"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-slate-700">Physical Address (Optional)</label>
+                <input
+                  type="text"
+                  value={locData.address}
+                  onChange={(e) => setLocData({ ...locData, address: e.target.value })}
+                  placeholder="e.g. Floor 4, Cyber City"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowLocModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={locLoading}
+                  className="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs disabled:opacity-50 transition-all flex items-center gap-1.5">
+                  {locLoading ? "Saving..." : "Save Office Location"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

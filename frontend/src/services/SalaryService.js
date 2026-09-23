@@ -16,9 +16,12 @@ export const createSalary = async(data) => {
 }
 
 // get all salaries with filter
-export const getSalaries = async(page = 1, limit = 4) => {
+export const getSalaries = async(page = 1, limit = 8, status = '', employee = '') => {
     try {
-        const res = await axiosClient.get(`/salary?page=${page}&limit=${limit}`)
+        let url = `/salary?page=${page}&limit=${limit}`;
+        if (status) url += `&status=${encodeURIComponent(status)}`;
+        if (employee) url += `&employee=${encodeURIComponent(employee)}`;
+        const res = await axiosClient.get(url)
         return res.data
     } catch (error) {
         throw errorHandler(error)

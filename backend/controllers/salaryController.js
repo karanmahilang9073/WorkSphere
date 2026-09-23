@@ -34,7 +34,7 @@ export const createSalary =  asyncHandler(async(req, res) => {
     const monthDate = new Date(month)
     
     const salary = await Salary.create({employee, baseSalary, allowance, deduction, month : monthDate})
-    await salary.populate("employee", "name email role")
+    await salary.populate("employee", "name email role department")
 
     try {
         if(salary.status === 'paid'){
@@ -62,7 +62,7 @@ export const getAllSalaries = asyncHandler(async(req, res) => {
 
     const total = await Salary.countDocuments(filters)
 
-    const salaries = await Salary.find(filters).populate("employee", "name email role").sort({month : -1}).skip((page - 1) * limit).limit(limit)
+    const salaries = await Salary.find(filters).populate("employee", "name email role department").sort({month : -1}).skip((page - 1) * limit).limit(limit)
 
     res.status(200).json({success : true, salaries, currentPage: page, totalPages: Math.ceil(total / limit), totalRecords: total})
 })
@@ -70,7 +70,7 @@ export const getAllSalaries = asyncHandler(async(req, res) => {
 export const getSalary = asyncHandler(async(req,res) => {
     const salaryId = req.params.id 
 
-    const salary = await Salary.findById(salaryId).populate("employee", "name email role")
+    const salary = await Salary.findById(salaryId).populate("employee", "name email role department")
     if(!salary){
         const error = new Error('salary not found')
         error.statusCode = 404
@@ -132,7 +132,7 @@ export const updateSalary = asyncHandler(async(req, res) => {
 
     await salary.save()
 
-    await salary.populate("employee", "name email")
+    await salary.populate("employee", "name email role department")
 
     res.status(200).json({success : true, message : 'salary updated successfully', data : salary})
 })
@@ -155,8 +155,9 @@ export const updateStatus = asyncHandler(async(req, res) => {
 
     const currentStatus = salary.status
     const validTransitions = {
-        pending : ['processing'],
-        processing : ['paid'],
+        pending : ['processing', 'paid'],
+        processing : ['paid', 'pending'],
+        paid : ['pending', 'processing']
     }
     if(!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(status)) {
         const error = new Error(`invalid status transition from ${currentStatus} to ${status}`)
@@ -165,7 +166,15 @@ export const updateStatus = asyncHandler(async(req, res) => {
     }
     salary.status = status
     await salary.save()
-    await salary.populate("employee", "name email role")
+    await salary.populate("employee", "name email role department")
+
+    try {
+        if(status === 'paid'){
+            await payPublishedMail({user : salary.employee, payslip : salary})
+        }
+    } catch (error) {
+        console.log('payslip email failed:', error)
+    }
 
     res.status(200).json({success : true, message : `salary marked as ${status}`, salary})
 })

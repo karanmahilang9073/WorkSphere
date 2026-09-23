@@ -1,83 +1,182 @@
 import React, { useEffect, useState } from 'react'
+import { X, UserCheck, Mail, Building2, Shield, DollarSign, Save } from 'lucide-react'
 
-function EditemployeeModal({show, onClose, employee, onSave}) {
-
+function EditemployeeModal({ show, onClose, employee, onSave }) {
     const [formData, setFormData] = useState({
-        name : '',
-        email : '',
-        department  : '',
-        role : '',
-        salary : ''
+        name: '',
+        email: '',
+        department: '',
+        role: '',
+        salary: ''
     })
     const [error, setError] = useState({})
-    
+
     useEffect(() => {
-        if(employee) {
-            setFormData(employee)
+        if (employee) {
+            setFormData({
+                name: employee.name || '',
+                email: employee.email || '',
+                department: employee.department || '',
+                role: employee.role || '',
+                salary: employee.salary !== undefined ? employee.salary : ''
+            })
+            setError({})
         }
     }, [employee])
 
-    if(!show) return null
+    if (!show) return null
 
     const validate = () => {
         let newError = {}
-        if(!formData.name || !formData.name.trim()) newError.name = 'name is required'
-        if(!formData.email || !formData.email.trim()) newError.email = 'email is required'
-        if(!formData.department || !formData.department.trim()) newError.department = 'department is required'
-        if(!formData.salary || formData.salary === '' || isNaN(formData.salary)) newError.salary = 'valid salary is required'
+        if (!formData.name || !formData.name.trim()) newError.name = 'Full name is required'
+        if (!formData.email || !formData.email.trim()) newError.email = 'Valid email is required'
+        if (!formData.department || !formData.department.trim()) newError.department = 'Department is required'
+        if (formData.salary === '' || isNaN(formData.salary)) newError.salary = 'Valid salary is required'
         setError(newError)
         return Object.keys(newError).length === 0
     }
-    
+
     const handleChange = (e) => {
-        setFormData({...formData, [e.target.name] : e.target.value})
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+        if (error[e.target.name]) {
+            setError(prev => ({ ...prev, [e.target.name]: undefined }))
+        }
     }
 
-    const  handleSubmit = () => {
-        if(!validate()) return
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (!validate()) return
         onSave(formData)
-        onClose()
     }
 
-  return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-        <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-            <h2 className='text-xl font-semibold mb-4'>Edit Employee</h2>
+    return (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200/90 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/60">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                            <UserCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-sm font-bold text-slate-900">Edit Employee Details</h2>
+                            <p className="text-[11px] text-slate-500">Update personnel record and compensation</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
 
-            <div className='mb-3'>
-                <input type="text" name='name' value={formData.name} onChange={handleChange} placeholder='Name' className='w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500' />
-                {error.name && <p key="error-name" className='text-red-500 text-sm mt-1'>{error.name}</p>}
-            </div>
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {/* Name */}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                            Full Name
+                        </label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Employee Name"
+                            className="w-full px-3.5 py-2 text-xs font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                        />
+                        {error.name && <p className="text-rose-500 text-[11px] mt-1 font-medium">{error.name}</p>}
+                    </div>
 
-            <div className='mb-3'>
-                <input type="email" name='email' value={formData.email} onChange={handleChange} placeholder='Email' className='w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500' />
-                {error.email && <p key="error-email" className='text-red-500 text-sm mt-1'>{error.email}</p>}
-            </div>
+                    {/* Email */}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                            <Mail className="w-3.5 h-3.5 text-slate-400" />
+                            Work Email
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="employee@company.com"
+                            className="w-full px-3.5 py-2 text-xs font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                        />
+                        {error.email && <p className="text-rose-500 text-[11px] mt-1 font-medium">{error.email}</p>}
+                    </div>
 
-            <div className='mb-3'>
-                <input type="text" name='department' value={formData.department} onChange={handleChange} placeholder='Department' className='w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500' />
-                {error.department && <p key="error-department" className='text-red-500 text-sm mt-1'>{error.department}</p>}
-            </div>
+                    {/* Department & Role Grid */}
+                    <div className="grid grid-cols-2 gap-3.5">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                                <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                                Department
+                            </label>
+                            <input
+                                type="text"
+                                name="department"
+                                value={formData.department}
+                                onChange={handleChange}
+                                placeholder="IT / Engineering"
+                                className="w-full px-3.5 py-2 text-xs font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                            />
+                            {error.department && <p className="text-rose-500 text-[11px] mt-1 font-medium">{error.department}</p>}
+                        </div>
 
-            <div className='mb-3'>
-                <input type="text" name='role' value={formData.role} onChange={handleChange} disabled placeholder='Role' className='w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-60' />
-                {error.role && <p key="error-role" className='text-red-500 text-sm mt-1'>{error.role}</p>}
-            </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                                <Shield className="w-3.5 h-3.5 text-slate-400" />
+                                System Role
+                            </label>
+                            <input
+                                type="text"
+                                name="role"
+                                value={formData.role}
+                                disabled
+                                className="w-full px-3.5 py-2 text-xs font-medium border border-slate-200 rounded-xl bg-slate-50 text-slate-500 cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
 
-            <div className='mb-4'>
-                <input type="number" name='salary' value={formData.salary} onChange={handleChange} placeholder='Salary' className='w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500' />
-                {error.salary && <p key="error-salary" className='text-red-500 text-sm mt-1'>{error.salary}</p>}
-            </div>
+                    {/* Salary */}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                            <DollarSign className="w-3.5 h-3.5 text-slate-400" />
+                            Monthly Salary (₹ / $)
+                        </label>
+                        <input
+                            type="number"
+                            name="salary"
+                            value={formData.salary}
+                            onChange={handleChange}
+                            placeholder="Salary amount"
+                            className="w-full px-3.5 py-2 text-xs font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                        />
+                        {error.salary && <p className="text-rose-500 text-[11px] mt-1 font-medium">{error.salary}</p>}
+                    </div>
 
-            <div className="flex gap-3 justify-end">
-                <button onClick={handleSubmit} className='px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition'>Save</button>
-                <button onClick={onClose} className='px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition'>Cancel</button>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2.5 justify-end pt-3 border-t border-slate-100">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 text-xs font-semibold border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5"
+                        >
+                            <Save className="w-3.5 h-3.5" />
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
-            
         </div>
-      
-    </div>
-  )
+    )
 }
 
 export default EditemployeeModal

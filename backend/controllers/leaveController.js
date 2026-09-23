@@ -61,10 +61,10 @@ export const getLeaves = asyncHandler(async (req, res) => {
 
     if(req.user.role === "Employee") {
         totalRecords = await Leave.countDocuments({employee: employeeId})
-        leaves = await Leave.find({employee : employeeId}).populate("employee", "name email role").sort({createdAt : -1})
+        leaves = await Leave.find({employee : employeeId}).populate("employee", "name email role department").sort({createdAt : -1})
     } else {
         totalRecords = await Leave.countDocuments();
-        leaves = await Leave.find().populate("employee", "name email role").sort({createdAt : -1}).skip(skip).limit(limit)
+        leaves = await Leave.find().populate("employee", "name email role department").sort({createdAt : -1}).skip(skip).limit(limit)
     }
     res.status(200).json({success: true, leaves, currentPage: page, totalPages: Math.ceil(totalRecords / limit), totalRecords})
 })
@@ -100,6 +100,7 @@ export const updateLeaveStatus = asyncHandler(async(req, res) => {
     leave.approvedComment = comment
 
     await leave.save()
+    await leave.populate("employee", "name email role department")
 
     res.status(200).json({success: true, message: `leave ${status}`, leave})
 })

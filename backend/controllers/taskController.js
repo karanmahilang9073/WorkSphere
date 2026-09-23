@@ -6,7 +6,7 @@ import { taskAssignMail } from "../services/emailService.js";
 
 
 export const createTask = asyncHandler(async(req, res) => {
-    const {title, description, assignedTo, deadline} = req.body
+    const {title, description, assignedTo, deadline, priority} = req.body
     if(!title || !assignedTo){
         const error = new Error('title and assignedTo field is required')
         error.statusCode = 400
@@ -26,8 +26,14 @@ export const createTask = asyncHandler(async(req, res) => {
         throw error
     }
 
-    const task = await Task.create({title, description, assignedTo, deadline})
-    await task.populate("assignedTo", "name email")
+    const task = await Task.create({
+        title,
+        description,
+        assignedTo,
+        deadline,
+        priority: priority || 'medium'
+    })
+    await task.populate("assignedTo", "name email department role")
 
     await Notification.create({
         recipient : assignedTo,
@@ -36,11 +42,10 @@ export const createTask = asyncHandler(async(req, res) => {
         message : `new task assigned: ${title}`
     })
 
-    try {
-        await taskAssignMail({user,  task})
-    } catch (error) {
+    // Fire email asynchronously without blocking the response
+    taskAssignMail({user, task}).catch(error => {
         console.log('task email failed', error)
-    }
+    })
 
     res.status(201).json({success : true, message : "task created successfully", task})
 })
@@ -48,9 +53,9 @@ export const createTask = asyncHandler(async(req, res) => {
 export const getAllTasks = asyncHandler(async(req, res) => {
     let tasks 
     if(['HR','Admin'].includes(req.user.role)){
-        tasks = await Task.find().populate("assignedTo", "name email").sort({createdAt : -1})
+        tasks = await Task.find().populate("assignedTo", "name email department role").sort({createdAt : -1})
     } else {
-        tasks = await Task.find({assignedTo : req.user._id}).populate("assignedTo", "name email").sort({createdAt : -1})
+        tasks = await Task.find({assignedTo : req.user._id}).populate("assignedTo", "name email department role").sort({createdAt : -1})
     }
 
     res.status(200).json({success: true, message : 'all tasks fetched successfully', count : tasks.length, data : tasks})
@@ -74,7 +79,7 @@ export const getTask =  asyncHandler(async(req, res) => {
 })
 
 export const updateTask = asyncHandler(async(req, res) => {
-    const {title, description, deadline} = req.body
+    const {title, description, deadline, priority, assignedTo} = req.body
     const taskId = req.params.id
     if(!taskId){
         const error = new Error('task ID is required for updation')
@@ -98,8 +103,10 @@ export const updateTask = asyncHandler(async(req, res) => {
         ...(title && {title}),
         ...(description && {description}),
         ...(deadline && {deadline : new Date(deadline)}),
+        ...(priority && {priority}),
+        ...(assignedTo && {assignedTo})
     }
-    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email")
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updateData, {returnDocument : 'after', runValidators : true}).populate("assignedTo", "name email department role")
     res.status(200).json({success : true, message : "task updated successfully", data : updatedTask})
 })
 

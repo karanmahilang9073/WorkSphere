@@ -15,6 +15,7 @@ import MyAttendance from './pages/employee/MyAttendance'
 import MyLeaves from './pages/employee/MyLeaves'
 import MySalary from './pages/employee/MySalary'
 import MyTasks from './pages/employee/MyTasks'
+import TaskDetails from './pages/employee/TaskDetails'
 import Notification from './pages/employee/Notification'
 import Helpdesk from './pages/employee/Helpdesk'
 import Myprofile from './pages/employee/Myprofile'
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/employee/my-leaves" element={<MyLeaves />} />
           <Route path="/employee/my-salary" element={<MySalary />} />
           <Route path="/employee/my-tasks" element={<MyTasks />} />
+          <Route path="/employee/my-tasks/:id" element={<TaskDetails />} />
           <Route path="/employee/notifications" element={<Notification />} />
           <Route path="/employee/helpdesk" element={<Helpdesk />} />
           <Route path='/employee/profile' element={<Myprofile/>} />

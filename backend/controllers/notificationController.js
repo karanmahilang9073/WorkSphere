@@ -41,7 +41,7 @@ export const getMyNotifications = asyncHandler(async(req, res) => {
 
 export const markAsRead = asyncHandler(async(req, res) => {
     const notificationId = req.params.id
-    const notification = await Notification.findByIdAndUpdate(
+    const notification = await Notification.findOneAndUpdate(
         { _id : notificationId, recipient : req.user._id}, 
         {isRead : true}, 
         {returnDocument : 'after'})

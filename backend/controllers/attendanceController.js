@@ -105,6 +105,18 @@ export const getActiveOfficeLocation = async () => {
     }
 }
 
+export const getToday = (timezoneOffset) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today
+}
+
+export const calculateHours = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return 0
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime()
+    return Math.max(0, diff / (1000 * 60 * 60))
+}
+
 // Haversine formula to calculate distance in meters between two GPS coordinates
 const calculateDistanceMeters = (lat1, lon1, lat2, lon2) => {
     const R = 6371e3 // Earth radius in meters
@@ -244,7 +256,10 @@ export const checkout = asyncHandler(async (req, res) => {
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
 
-    const attendance = await Attendance.findOne({ employee: userId, date: { $gte: start, $lt: end } })
+    let attendance = await Attendance.findOne({ employee: userId, date: { $gte: start, $lt: end } })
+    if (!attendance) {
+        attendance = await Attendance.findOne({ employee: userId, checkIn: { $exists: true }, checkOut: { $exists: false } }).sort({ checkIn: -1 })
+    }
     if (!attendance) {
         const error = new Error('check-in not found')
         error.statusCode = 404

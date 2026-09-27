@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getMyNotifications } from '../../services/NotificationService'
+import { getMyNotifications, markAllAsRead } from '../../services/NotificationService'
 import NotificationCard from '../../components/notification/NotificationCard'
 import { toast } from 'react-toastify'
 import { 
@@ -36,12 +36,28 @@ function Notification() {
     }, [])
 
     const handleUpdate = (updatedNotification) => {
-        setNotifications(prev => prev.map(n => n._id === updatedNotification._id ? updatedNotification : n))
+        const item = updatedNotification?.notification || updatedNotification
+        if (!item || !item._id) return
+        setNotifications(prev => prev.map(n => n._id === item._id ? item : n))
     }
 
     const handleDelete = (deleteId) => {
-        setNotifications(prev => prev.filter(n => n._id !== deleteId))
+        const idToDelete = typeof deleteId === 'string' ? deleteId : deleteId?._id || deleteId?.id
+        setNotifications(prev => prev.filter(n => n._id !== idToDelete))
         toast.success('Notification removed')
+    }
+
+    const handleMarkAllAsRead = async () => {
+        if (unreadCount === 0) return
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+        try {
+            await markAllAsRead()
+            toast.success('All notifications marked as read')
+        } catch (error) {
+            console.error('Failed to mark all as read', error)
+            toast.error('Failed to mark all as read')
+            fetchNotifications()
+        }
     }
 
     // Filter notifications
@@ -81,12 +97,23 @@ function Notification() {
                     </div>
                 </div>
 
-                <button
-                    onClick={fetchNotifications}
-                    className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors"
-                    title="Refresh">
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
-                </button>
+                <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={handleMarkAllAsRead}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors cursor-pointer border border-indigo-200/60 shadow-2xs"
+                        >
+                            <CheckCheck className="w-3.5 h-3.5" />
+                            <span>Mark all as read</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={fetchNotifications}
+                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                        title="Refresh">
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+                    </button>
+                </div>
             </div>
 
             {/* Filter Tabs */}

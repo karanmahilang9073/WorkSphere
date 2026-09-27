@@ -438,7 +438,16 @@ export default function AdminLayout() {
                                             notifications.map((notif) => (
                                                 <div
                                                     key={notif._id}
-                                                    onClick={() => !notif.isRead && handleReadOne(notif._id)}
+                                                    onClick={() => {
+                                                        if (!notif.isRead) handleReadOne(notif._id)
+                                                        setNotifOpen(false)
+                                                        const type = notif.type?.toLowerCase()
+                                                        if (type === 'task') navigate('/admin/tasks')
+                                                        else if (type === 'leave') navigate('/admin/leaves')
+                                                        else if (type === 'salary') navigate('/admin/compensation')
+                                                        else if (type === 'attendance') navigate('/admin/attendance')
+                                                        else navigate('/admin')
+                                                    }}
                                                     className={`p-3 text-xs transition-colors cursor-pointer ${
                                                         notif.isRead ? 'bg-white hover:bg-slate-50' : 'bg-indigo-50/50 hover:bg-indigo-50'
                                                     }`}

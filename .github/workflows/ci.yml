@@ -1,0 +1,41 @@
+name: WORKSPHERE ci
+
+on: 
+  push:
+    branches: [main, dev, development]
+  pull_request:
+    branches: [main, dev, development]
+
+jobs:
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run: 
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: |
+          node -c server.js
+          node -c controllers/*.js
+          node -c routes/*.js
+      - run: npm run lint
+      - run: npm test
+
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run build

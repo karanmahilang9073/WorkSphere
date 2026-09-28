@@ -25,6 +25,9 @@ jobs:
           node -c routes/*.js
       - run: npm run lint
       - run: npm test
+        env:
+          GROQ_API_KEY: 'ci_dummy_key'
+          JWT_SECRET: 'ci_dummy_secret'
 
   frontend-ci:
     name: Frontend CI

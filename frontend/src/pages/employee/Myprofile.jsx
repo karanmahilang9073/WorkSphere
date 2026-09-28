@@ -212,23 +212,13 @@ function Myprofile() {
                                             </div>
                                         </div>
 
-                                        <div className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center gap-3">
+                                        <div className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center gap-3 md:col-span-2">
                                             <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-emerald-600 shrink-0 shadow-2xs">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </div>
                                             <div>
                                                 <span className="text-[10px] font-semibold text-slate-400 uppercase block">Employment Status</span>
                                                 <span className="text-xs font-bold text-emerald-700">Active & Verified</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shrink-0 shadow-2xs">
-                                                <Key className="w-4 h-4" />
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] font-semibold text-slate-400 uppercase block">WorkSphere ID</span>
-                                                <span className="text-xs font-mono font-bold text-slate-700">{profile._id}</span>
                                             </div>
                                         </div>
                                     </div>

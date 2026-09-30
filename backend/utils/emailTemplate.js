@@ -85,12 +85,12 @@ export const leaveRejectedTemplate = (user, leave) => {
     return baseTemplate(content)
 }
 
-export const payslipPublishedTemplate = (user, leave) => {
+export const payslipPublishedTemplate = (user, payslip) => {
     const content =`
         <h3>Payslip available 💲</h3>
         <p>Hello ${user.name},</p>
 
-        <p>Your payslip for <strong>${payslip.month}/${payslip.year}{/strong} is ready.</p>
+        <p>Your payslip for <strong>${payslip.month}/${payslip.year}</strong> is ready.</p>
 
         <ul>
            <li><strong>Net Salary:</strong> ₹${payslip.netSalary}</li>

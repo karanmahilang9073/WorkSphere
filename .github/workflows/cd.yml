@@ -1,0 +1,16 @@
+name: WORKSPHERE cd
+
+on:
+  workflow_run:
+    workflows: ["WORKSPHERE ci"]
+    types: [completed]
+    branches: [main, dev]
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend to render
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
+    steps: 
+      - name: Trigger Render Deploy Hook
+        run: curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL}}"
